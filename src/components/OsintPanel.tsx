@@ -345,46 +345,42 @@ function OsintPanelInner({ isMobile, onSweepVisualize, onScanGeolocate }: OsintP
         return;
       }
       let parsedData = data;
-        let parsedData = data;
-        
-        // Transform backend responses to frontend format
-        if (activeTab === 'leaks' && data) {
-           // Backend returns: {email, breached, breach_count, breaches, status}
-           // breaches is array of {name, title, date, data_classes}
-           const breachList = (data.breaches || []).map((b: any) => b.name || b.title || 'Unknown');
-           const dataExposed = new Set<string>();
-           (data.breaches || []).forEach((b: any) => {
-              if (b.data_classes && Array.isArray(b.data_classes)) {
-                 b.data_classes.forEach((dc: string) => dataExposed.add(dc));
-              }
-           });
-           parsedData = {
-              email: query,
-              breached: data.breached || false,
-              breaches: breachList,
-              data_exposed: Array.from(dataExposed).sort(),
-              breach_count: data.breach_count || 0
-           };
-        }
 
-        setResults(parsedData);
-        setHistory(prev => [{ tab: activeTab, query, time: new Date().toLocaleTimeString() }, ...prev.slice(0, 9)]);
-        
-        // Geolocate the target in the background
-        if (activeTab === 'phone') {
-          // Phone scanner returns: {phone, valid, geolocation: {lat, lng, country, city}, carrier, etc}
-          if (data.geolocation && data.geolocation.latitude && data.geolocation.longitude && onScanGeolocate) {
-             onScanGeolocate(query, { 
-               lat: data.geolocation.latitude, 
-               lng: data.geolocation.longitude, 
-               type: 'phone', 
-               country: data.geolocation.country,
-               city: data.geolocation.city
-             });
+      // Transform backend responses to frontend format
+      if (activeTab === 'leaks' && data) {
+        // Backend returns: {email, breached, breach_count, breaches, status}
+        // breaches is array of {name, title, date, data_classes}
+        const breachList = (data.breaches || []).map((b: any) => b.name || b.title || 'Unknown');
+        const dataExposed = new Set<string>();
+        (data.breaches || []).forEach((b: any) => {
+          if (b.data_classes && Array.isArray(b.data_classes)) {
+            b.data_classes.forEach((dc: string) => dataExposed.add(dc));
           }
+        });
+        parsedData = {
+          email: query,
+          breached: data.breached || false,
+          breaches: breachList,
+          data_exposed: Array.from(dataExposed).sort(),
+          breach_count: data.breach_count || 0
+        };
+      }
+
+      setResults(parsedData);
+      setHistory(prev => [{ tab: activeTab, query, time: new Date().toLocaleTimeString() }, ...prev.slice(0, 9)]);
+      
+      // Geolocate the target in the background
+      if (activeTab === 'phone') {
+        // Phone scanner returns: {phone, valid, geolocation: {lat, lng, country, city}, carrier, etc}
+        if (data.geolocation && data.geolocation.latitude && data.geolocation.longitude && onScanGeolocate) {
+          onScanGeolocate(query, { 
+            lat: data.geolocation.latitude, 
+            lng: data.geolocation.longitude, 
+            type: 'phone', 
+            country: data.geolocation.country,
+            city: data.geolocation.city
+          });
         }
-      } else {
-        setError(data.error || 'Lookup failed');
       }
     } catch (err: any) {
       if (activeTab !== 'sweep') {
