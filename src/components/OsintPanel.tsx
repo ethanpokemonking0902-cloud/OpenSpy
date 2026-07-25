@@ -27,11 +27,18 @@ const TABS = [
   { id: 'subdomains', label: 'SUBDOMAINS', icon: Layers, placeholder: 'Domain to enumerate', color: '#FFFFFF' },
   { id: 'tech', label: 'TECH DETECT', icon: Code, placeholder: 'URL to fingerprint', color: '#9C27B0' },
   { id: 'shodan', label: 'SHODAN IOT', icon: Network, placeholder: 'IP address', color: '#FF3D3D' },
+  { id: 'virustotal', label: 'VIRUSTOTAL', icon: ShieldAlert, placeholder: 'IP or domain', color: '#E040FB' },
+  { id: 'abuseipdb', label: 'ABUSEIPDB', icon: AlertTriangle, placeholder: 'IP address', color: '#FF6B6B' },
   { id: 'bgp', label: 'BGP ROUTE', icon: Globe, placeholder: 'IP or ASN', color: '#FFFFFF' },
   { id: 'mac', label: 'MAC ADDR', icon: Fingerprint, placeholder: 'MAC address', color: '#D0D0D0' },
   { id: 'phone', label: 'PHONE INTEL', icon: Phone, placeholder: 'Phone number (e.g. +1...)', color: '#D0D0D0' },
   { id: 'leaks', label: 'DATA LEAKS', icon: ShieldAlert, placeholder: 'Email address', color: '#E040FB' },
   { id: 'github', label: 'GITHUB RECON', icon: Terminal, placeholder: 'GitHub username', color: '#FFFFFF' },
+  { id: 'people', label: 'PEOPLE SEARCH', icon: Search, placeholder: 'Name, email, or username', color: '#40E0D0' },
+  { id: 'email', label: 'EMAIL INTEL', icon: FileText, placeholder: 'Email address', color: '#40E0D0' },
+  { id: 'breaches', label: 'BREACHES', icon: ShieldAlert, placeholder: 'Email or username', color: '#FF3D3D' },
+  { id: 'username', label: 'USERNAME LOOKUP', icon: Terminal, placeholder: 'Username to search', color: '#40E0D0' },
+  { id: 'associated', label: 'ASSOCIATED ACCTS', icon: Network, placeholder: 'Email address', color: '#40E0D0' },
   { id: 'sweep', label: 'IP SWEEP', icon: Crosshair, placeholder: 'Enter IP address (e.g. 8.8.8.8)', color: '#FF3D3D' },
 ];
 
@@ -194,6 +201,10 @@ function OsintPanelInner({ isMobile, onSweepVisualize, onScanGeolocate }: OsintP
         return { ...base, risk_score: 0, malicious: false, category: 'Unknown', total_reports: 0, reports: 0, tags: [] };
       case 'shodan':
         return { ...base, ip: queryValue, ports: [], cpes: [], hostnames: [], tags: [], vulns: [] };
+      case 'virustotal':
+        return { ...base, query: queryValue, last_analysis_stats: { malicious: 0, suspicious: 0, undetected: 0, harmless: 0 }, reputation: 0, threat_names: [] };
+      case 'abuseipdb':
+        return { ...base, ip: queryValue, abuse_confidence_score: 0, total_reports: 0, is_whitelisted: false, is_blacklisted: false };
       case 'bgp':
         return { ...base, type: 'ip', ip: queryValue, asn: null, prefixes: null, peers: null };
       case 'mac':
@@ -204,6 +215,16 @@ function OsintPanelInner({ isMobile, onSweepVisualize, onScanGeolocate }: OsintP
         return { ...base, username: queryValue, public_repos: 0, followers: 0, name: null, location: null, email: null, bio: null, recent_repos: [] };
       case 'leaks':
         return { ...base, email: queryValue, breached: false, breaches: [], data_exposed: [], breach_count: 0 };
+      case 'people':
+        return { ...base, query: queryValue, breaches: { email_breaches: [], total_breaches: 0 }, social_media: {}, emails: { found_emails: [] }, github: { status: 'not_found' }, public_records: {} };
+      case 'email':
+        return { ...base, email: queryValue, breaches: { email_breaches: [] }, associated_accounts: { github_accounts: [] } };
+      case 'breaches':
+        return { ...base, query: queryValue, breaches: { email_breaches: [], total_breaches: 0 } };
+      case 'username':
+        return { ...base, username: queryValue, platform_availability: { github: 'unknown', twitter: 'unknown', reddit: 'unknown' } };
+      case 'associated':
+        return { ...base, email: queryValue, associated_accounts: { github_accounts: [] } };
       case 'ssl':
         return { ...base, target: queryValue, protocol: null, cipher: null, valid: false, issuer: 'Unknown', subject: 'Unknown', expires: 'Unknown', sans: [] };
       case 'headers':
@@ -311,6 +332,13 @@ function OsintPanelInner({ isMobile, onSweepVisualize, onScanGeolocate }: OsintP
         case 'phone': url = `${SCANNER_URL}/scan/phone?target=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
         case 'leaks': url = `${SCANNER_URL}/api/osint/leaks?email=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
         case 'github': url = `${SCANNER_URL}/api/osint/github?user=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
+        case 'virustotal': url = `${SCANNER_URL}/api/osint/virustotal?query=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
+        case 'abuseipdb': url = `${SCANNER_URL}/api/osint/abuseipdb?ip=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
+        case 'people': url = `${SCANNER_URL}/scan/people?target=${encodeURIComponent(query)}&type=auto&key=${SCANNER_KEY}`; break;
+        case 'email': url = `${SCANNER_URL}/api/osint/email?email=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
+        case 'breaches': url = `${SCANNER_URL}/api/osint/breaches?query=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
+        case 'username': url = `${SCANNER_URL}/api/osint/username?username=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
+        case 'associated': url = `${SCANNER_URL}/api/osint/associated?email=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
         case 'vuln': url = `${SCANNER_URL}/scan/vuln?target=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
         case 'scanner': url = `${SCANNER_URL}/scan/quick?target=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
         case 'headers': url = `${SCANNER_URL}/scan/headers?target=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
@@ -795,10 +823,272 @@ function OsintPanelInner({ isMobile, onSweepVisualize, onScanGeolocate }: OsintP
       );
     }
 
+    // ── VIRUSTOTAL ──
+    if (activeTab === 'virustotal') {
+      const stats = r.last_analysis_stats || {};
+      const malicious = stats.malicious || 0;
+      const suspicious = stats.suspicious || 0;
+      const undetected = stats.undetected || 0;
+      const harmless = stats.harmless || 0;
+      const total = malicious + suspicious + undetected + harmless;
+      
+      return (
+        <div>
+          <SectionHeader title="VIRUSTOTAL ANALYSIS" icon={ShieldAlert} color="#E040FB" />
+          <ResultRow label="Query" value={r.query || query} color="#E040FB" />
+          <ResultRow label="Reputation" value={r.reputation || 0} color={r.reputation && r.reputation < -10 ? '#FF3D3D' : '#E0E0E0'} />
+          {total > 0 && (
+            <div className="mt-2 p-2 border border-[#E040FB]/30 bg-[#E040FB]/5 rounded">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-mono text-[#E040FB] font-bold">DETECTION RESULTS</span>
+                <span className="text-[10px] font-mono text-[#8A8880]">{total} engines</span>
+              </div>
+              <div className="grid grid-cols-4 gap-2">
+                <div className="flex flex-col items-center p-2 rounded bg-[#1A1A18]">
+                  <span className="text-[14px] font-mono font-bold text-red-400">{malicious}</span>
+                  <span className="text-[8px] font-mono text-[#5C5A54]">MALICIOUS</span>
+                </div>
+                <div className="flex flex-col items-center p-2 rounded bg-[#1A1A18]">
+                  <span className="text-[14px] font-mono font-bold text-orange-400">{suspicious}</span>
+                  <span className="text-[8px] font-mono text-[#5C5A54]">SUSPICIOUS</span>
+                </div>
+                <div className="flex flex-col items-center p-2 rounded bg-[#1A1A18]">
+                  <span className="text-[14px] font-mono font-bold text-yellow-400">{undetected}</span>
+                  <span className="text-[8px] font-mono text-[#5C5A54]">UNDETECTED</span>
+                </div>
+                <div className="flex flex-col items-center p-2 rounded bg-[#1A1A18]">
+                  <span className="text-[14px] font-mono font-bold text-green-400">{harmless}</span>
+                  <span className="text-[8px] font-mono text-[#5C5A54]">HARMLESS</span>
+                </div>
+              </div>
+            </div>
+          )}
+          {r.threat_names && r.threat_names.length > 0 && (
+            <div className="mt-2 p-2 border border-red-500/30 bg-red-500/10 rounded">
+              <span className="text-[10px] font-mono text-red-400 font-bold mb-1 block">THREAT NAMES</span>
+              <div className="flex flex-wrap gap-1.5">
+                {r.threat_names.map((t: string) => (
+                  <span key={t} className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[#1A1A18] text-red-400 border border-red-500/30">{t}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {renderFallbackExcluding(['query','last_analysis_stats','reputation','threat_names','timestamp','cached','status'])}
+        </div>
+      );
+    }
 
+    // ── ABUSEIPDB ──
+    if (activeTab === 'abuseipdb') {
+      const score = r.abuse_confidence_score || 0;
+      const riskColor = score > 75 ? '#FF3D3D' : score > 25 ? '#D0D0D0' : '#E0E0E0';
+      
+      return (
+        <div>
+          <SectionHeader title="ABUSEIPDB REPUTATION" icon={AlertTriangle} color="#FF6B6B" />
+          <ResultRow label="IP Address" value={r.ip || query} color="#FF6B6B" />
+          <div className="mt-2 p-3 rounded-lg" style={{ backgroundColor: riskColor + '15', border: `1px solid ${riskColor}30` }}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-mono font-bold" style={{ color: riskColor }}>ABUSE SCORE</span>
+              <span className="text-[16px] font-mono font-bold" style={{ color: riskColor }}>{score}%</span>
+            </div>
+            <div className="w-full h-2 bg-[#1A1A18] rounded-full overflow-hidden">
+              <div className="h-full" style={{ width: `${score}%`, backgroundColor: riskColor }} />
+            </div>
+          </div>
+          <ResultRow label="Total Reports" value={r.total_reports || 0} color={r.total_reports > 0 ? '#FF3D3D' : '#E0E0E0'} />
+          <ResultRow label="Whitelisted" value={r.is_whitelisted ? 'YES' : 'NO'} color={r.is_whitelisted ? '#00E676' : '#D0D0D0'} />
+          <ResultRow label="Blacklisted" value={r.is_blacklisted ? 'YES' : 'NO'} color={r.is_blacklisted ? '#FF3D3D' : '#E0E0E0'} />
+          <ResultRow label="ISP" value={r.isp} />
+          <ResultRow label="Domain" value={r.domain} />
+          <ResultRow label="Usage Type" value={r.usage_type} />
+          {r.reports && r.reports.length > 0 && (
+            <div className="mt-2 p-2 border border-red-500/30 bg-red-500/10 rounded">
+              <span className="text-[10px] font-mono text-red-400 font-bold mb-2 block">RECENT ABUSE REPORTS ({r.reports.length})</span>
+              <div className="space-y-1">
+                {r.reports.slice(0, 5).map((report: any, i: number) => (
+                  <div key={i} className="text-[9px] font-mono text-[#8A8880]">
+                    <span className="text-red-400">{report.category || 'Unknown'}:</span> {report.comment || 'No comment'}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {renderFallbackExcluding(['ip','abuse_confidence_score','total_reports','is_whitelisted','is_blacklisted','isp','domain','usage_type','reports','timestamp','cached','status'])}
+        </div>
+      );
+    }
+
+    // ── PEOPLE SEARCH ──
+    if (activeTab === 'people') {
+      return (
+        <div>
+          <SectionHeader title="PEOPLE RECONNAISSANCE" icon={Search} color="#40E0D0" />
+          <ResultRow label="Query" value={r.query || query} color="#40E0D0" />
+          <ResultRow label="Query Type" value={r.query_type} />
+          {r.breaches && (
+            <>
+              <SectionHeader title={`DATA BREACHES (${r.breaches.total_breaches || 0})`} icon={ShieldAlert} color="#FF3D3D" />
+              {r.breaches.email_breaches && r.breaches.email_breaches.length > 0 ? (
+                <div className="space-y-1.5">
+                  {r.breaches.email_breaches.slice(0, 10).map((b: any, i: number) => (
+                    <div key={i} className="p-2 rounded bg-red-500/5 border border-red-500/30">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] font-mono font-bold text-red-400">{b.name || b.title}</span>
+                        <span className="text-[8px] font-mono text-[#5C5A54]">{b.date}</span>
+                      </div>
+                      {b.data_exposed && <span className="text-[9px] font-mono text-[#8A8880]">{b.data_exposed.join(', ')}</span>}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <span className="text-[10px] font-mono text-[#5C5A54]">No breaches found</span>
+              )}
+            </>
+          )}
+          {r.github && r.github.status === 'found' && (
+            <>
+              <SectionHeader title="GITHUB PROFILE" icon={Terminal} color="#FFFFFF" />
+              <ResultRow label="Username" value={r.github.username} color="#FFFFFF" />
+              <ResultRow label="Name" value={r.github.name} />
+              <ResultRow label="Company" value={r.github.company} />
+              <ResultRow label="Location" value={r.github.location} />
+              <ResultRow label="Email" value={r.github.email} />
+              <ResultRow label="Public Repos" value={r.github.public_repos} />
+              <ResultRow label="Followers" value={r.github.followers} />
+            </>
+          )}
+          {renderFallbackExcluding(['query','query_type','breaches','social_media','emails','github','public_records','timestamp','cached','status'])}
+        </div>
+      );
+    }
+
+    // ── EMAIL INTELLIGENCE ──
+    if (activeTab === 'email') {
+      return (
+        <div>
+          <SectionHeader title="EMAIL INTELLIGENCE" icon={FileText} color="#40E0D0" />
+          <ResultRow label="Email" value={r.email || query} color="#40E0D0" />
+          {r.breaches && (
+            <>
+              <SectionHeader title={`BREACHES (${r.breaches.email_breaches ? r.breaches.email_breaches.length : 0})`} icon={ShieldAlert} color="#FF3D3D" />
+              {r.breaches.email_breaches && r.breaches.email_breaches.length > 0 ? (
+                <div className="space-y-1.5">
+                  {r.breaches.email_breaches.slice(0, 5).map((b: any, i: number) => (
+                    <div key={i} className="p-2 rounded bg-red-500/5 border border-red-500/30">
+                      <span className="text-[10px] font-mono font-bold text-red-400">{b.name || b.title}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <span className="text-[10px] font-mono text-green-400">✓ Not found in any breaches</span>
+              )}
+            </>
+          )}
+          {r.associated_accounts && r.associated_accounts.github_accounts && r.associated_accounts.github_accounts.length > 0 && (
+            <>
+              <SectionHeader title={`ASSOCIATED GITHUB ACCOUNTS (${r.associated_accounts.github_accounts.length})`} icon={Terminal} color="#FFFFFF" />
+              {r.associated_accounts.github_accounts.map((acc: any, i: number) => (
+                <div key={i} className="text-[10px] font-mono text-[#E8E6E0]">
+                  <span className="text-[#40E0D0]">{acc.username}</span> • {acc.repos} repos
+                </div>
+              ))}
+            </>
+          )}
+          {renderFallbackExcluding(['email','breaches','associated_accounts','timestamp','cached','status'])}
+        </div>
+      );
+    }
+
+    // ── DATA BREACHES ──
+    if (activeTab === 'breaches') {
+      const totalBreaches = r.breaches?.total_breaches || 0;
+      return (
+        <div>
+          <SectionHeader title={`DATA BREACHES (${totalBreaches})`} icon={ShieldAlert} color="#FF3D3D" />
+          <ResultRow label="Query" value={r.query || query} color="#FF3D3D" />
+          {totalBreaches > 0 ? (
+            <div className="space-y-1.5 mt-2">
+              {r.breaches.email_breaches && r.breaches.email_breaches.slice(0, 15).map((b: any, i: number) => (
+                <div key={i} className="p-2 rounded bg-red-500/5 border border-red-500/30 flex flex-col gap-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono font-bold text-red-400">{b.name || b.title}</span>
+                    <span className="text-[8px] font-mono text-[#5C5A54]">{b.date}</span>
+                  </div>
+                  {b.data_exposed && <span className="text-[9px] font-mono text-[#8A8880]">{Array.isArray(b.data_exposed) ? b.data_exposed.join(', ') : b.data_exposed}</span>}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <span className="text-[10px] font-mono text-green-400 mt-2">✓ No breaches found</span>
+          )}
+          {renderFallbackExcluding(['query','breaches','timestamp','cached','status'])}
+        </div>
+      );
+    }
+
+    // ── USERNAME LOOKUP ──
+    if (activeTab === 'username') {
+      return (
+        <div>
+          <SectionHeader title="USERNAME AVAILABILITY" icon={Terminal} color="#40E0D0" />
+          <ResultRow label="Username" value={r.username || query} color="#40E0D0" />
+          {r.platform_availability && (
+            <div className="space-y-1.5 mt-2">
+              {Object.entries(r.platform_availability).map(([platform, status]: [string, any]) => (
+                <div key={platform} className="flex items-center justify-between px-2.5 py-1.5 rounded" style={{ backgroundColor: status === 'taken' ? '#FF3D3D15' : status === 'available' ? '#00E67615' : '#5C5A5410' }}>
+                  <span className="text-[10px] font-mono font-bold capitalize">{platform}</span>
+                  <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ${status === 'taken' ? 'bg-red-500/20 text-red-400' : status === 'available' ? 'bg-green-500/20 text-green-400' : 'bg-[#3A3A38] text-[#8A8880]'}`}>
+                    {status ? status.toUpperCase() : 'UNKNOWN'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+          {renderFallbackExcluding(['username','platform_availability','timestamp','cached','status'])}
+        </div>
+      );
+    }
+
+    // ── ASSOCIATED ACCOUNTS ──
+    if (activeTab === 'associated') {
+      return (
+        <div>
+          <SectionHeader title="ASSOCIATED ACCOUNTS" icon={Network} color="#40E0D0" />
+          <ResultRow label="Email" value={r.email || query} color="#40E0D0" />
+          {r.associated_accounts && (
+            <>
+              {r.associated_accounts.github_accounts && r.associated_accounts.github_accounts.length > 0 && (
+                <>
+                  <SectionHeader title={`GITHUB (${r.associated_accounts.github_accounts.length})`} icon={Terminal} color="#FFFFFF" />
+                  <div className="space-y-1.5">
+                    {r.associated_accounts.github_accounts.map((acc: any, i: number) => (
+                      <div key={i} className="text-[10px] font-mono text-[#E8E6E0]">
+                        <a href={acc.profile} target="_blank" rel="noreferrer" className="text-[#40E0D0] hover:underline">{acc.username}</a>
+                        {acc.repos && <span className="text-[#5C5A54]"> • {acc.repos} repos</span>}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+              {r.associated_accounts.gitlab_accounts && r.associated_accounts.gitlab_accounts.length > 0 && (
+                <>
+                  <SectionHeader title={`GITLAB (${r.associated_accounts.gitlab_accounts.length})`} icon={Terminal} color="#FFFFFF" />
+                  {r.associated_accounts.gitlab_accounts.map((acc: any, i: number) => (
+                    <div key={i} className="text-[10px] font-mono text-[#E8E6E0]">{acc.username}</div>
+                  ))}
+                </>
+              )}
+            </>
+          )}
+          {renderFallbackExcluding(['email','associated_accounts','timestamp','cached','status'])}
+        </div>
+      );
+    }
 
     // Fallback for other tools
     return renderFallback();
+  };
   };
 
   const renderFallback = () => {
