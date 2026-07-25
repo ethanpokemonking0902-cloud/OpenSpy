@@ -1,0 +1,12 @@
+# Netlify configuration for OpenSpy
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+# Redirect root to include default layers
+[[redirects]]
+  from = "/"
+  to = "/?layers=maritime,cctv,live_news,news_intel,earthquakes,global_incidents,day_night,cables,sdk_sea,sdk_air,sdk_naval"
+  status = 301
+  force = true
