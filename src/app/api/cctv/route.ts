@@ -24,6 +24,7 @@ import { fetchHongKongCameras } from './hongkong';
 import { fetchUtahCameras } from './utah';
 import { fetchIcelandCameras } from './iceland';
 import { fetchTaiwanCameras } from './taiwan';
+import { getFallbackGlobalCameraSources } from './source-config';
 
 /**
  * OSIRIS — Worldwide CCTV Camera API v2
@@ -33,6 +34,60 @@ import { fetchTaiwanCameras } from './taiwan';
  */
 
 // ═══ CAMERA SOURCE DEFINITIONS ═══
+
+function dedupeCameras(cams: any[]): any[] {
+  const seen = new Set<string>();
+  const out: any[] = [];
+
+  for (const cam of cams) {
+    if (!cam?.lat || !cam?.lng) continue;
+    const id = cam.id || `${cam.lat.toFixed(4)}:${cam.lng.toFixed(4)}:${cam.source || 'unknown'}`;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push(cam);
+  }
+
+  return out;
+}
+
+async function fetchGlobalFallbackCameras(): Promise<any[]> {
+  return dedupeCameras(
+    getFallbackGlobalCameraSources().map((cam) => ({
+      ...cam,
+      id: cam.id,
+      lat: cam.lat,
+      lng: cam.lng,
+      name: cam.name,
+      city: cam.city,
+      country: cam.country,
+      source: cam.source,
+      feed_url: cam.feed_url,
+      external_url: cam.external_url,
+      stream_url: cam.stream_url,
+      stream_type: cam.stream_type || 'jpg',
+    }))
+  );
+}
+
+async function fetchLatinAmericaCameras(): Promise<any[]> {
+  return dedupeCameras([
+    { id: 'latam-mexico-city', lat: 19.4326, lng: -99.1332, name: 'Mexico City Zócalo', city: 'Mexico City', country: 'Mexico', external_url: 'https://www.earthcam.com/latinamerica/mexico/mexicocity/', source: 'EarthCam' },
+    { id: 'latam-sao-paulo', lat: -23.5505, lng: -46.6333, name: 'São Paulo Avenida Paulista', city: 'São Paulo', country: 'Brazil', external_url: 'https://www.earthcam.com/latinamerica/brazil/saopaulo/', source: 'EarthCam' },
+    { id: 'latam-rio', lat: -22.9068, lng: -43.1729, name: 'Rio de Janeiro waterfront', city: 'Rio de Janeiro', country: 'Brazil', external_url: 'https://www.earthcam.com/latinamerica/brazil/rio/', source: 'EarthCam' },
+    { id: 'latam-buenos-aires', lat: -34.6037, lng: -58.3816, name: 'Buenos Aires Plaza de Mayo', city: 'Buenos Aires', country: 'Argentina', external_url: 'https://www.earthcam.com/latinamerica/argentina/buenosaires/', source: 'EarthCam' },
+    { id: 'latam-santiago', lat: -33.4489, lng: -70.6693, name: 'Santiago Plaza de Armas', city: 'Santiago', country: 'Chile', external_url: 'https://www.earthcam.com/latinamerica/chile/santiago/', source: 'EarthCam' },
+  ]);
+}
+
+async function fetchAfricaCameras(): Promise<any[]> {
+  return dedupeCameras([
+    { id: 'africa-cape-town', lat: -33.9249, lng: 18.4241, name: 'Cape Town Waterfront', city: 'Cape Town', country: 'South Africa', external_url: 'https://www.earthcam.com/africa/southafrica/capetown/', source: 'EarthCam' },
+    { id: 'africa-johannesburg', lat: -26.2041, lng: 28.0473, name: 'Johannesburg CBD', city: 'Johannesburg', country: 'South Africa', external_url: 'https://www.earthcam.com/africa/southafrica/johannesburg/', source: 'EarthCam' },
+    { id: 'africa-cairo', lat: 30.0444, lng: 31.2357, name: 'Cairo Nile View', city: 'Cairo', country: 'Egypt', external_url: 'https://www.earthcam.com/africa/egypt/cairo/', source: 'EarthCam' },
+    { id: 'africa-nairobi', lat: -1.2864, lng: 36.8172, name: 'Nairobi Central', city: 'Nairobi', country: 'Kenya', external_url: 'https://www.earthcam.com/africa/kenya/nairobi/', source: 'EarthCam' },
+    { id: 'africa-lagos', lat: 6.5244, lng: 3.3792, name: 'Lagos Island', city: 'Lagos', country: 'Nigeria', external_url: 'https://www.earthcam.com/africa/nigeria/lagos/', source: 'EarthCam' },
+  ]);
+}
 
 // ── UK: Transport for London JamCams (~900) ──
 async function fetchTfLCameras(): Promise<any[]> {
@@ -412,6 +467,9 @@ async function fetchMiddleEastCameras(): Promise<any[]> {
 
 // ═══ REGION MAPPING ═══
 const REGION_FETCHERS: Record<string, () => Promise<any[]>> = {
+  'global': fetchGlobalFallbackCameras,
+  'latin-america': fetchLatinAmericaCameras,
+  'africa': fetchAfricaCameras,
   'middle-east': fetchMiddleEastCameras,
   'uk': fetchTfLCameras,
   'us-west': async () => { const [w, c] = await Promise.all([fetchWSDOTCameras(), fetchCaltransCameras()]); return [...w, ...c]; },
@@ -446,6 +504,7 @@ const REGION_FETCHERS: Record<string, () => Promise<any[]>> = {
 // Determine which regions to fetch based on viewport bounds
 function getRegionsForBounds(lat: number, lng: number, radius: number): string[] {
   const regions: string[] = [];
+  regions.push('global');
   // UK
   if (lat > 49 && lat < 61 && lng > -8 && lng < 2) regions.push('uk');
   // US-East
@@ -509,12 +568,17 @@ function getRegionsForBounds(lat: number, lng: number, radius: number): string[]
   // Taiwan
   if (lat > 21.9 && lat < 25.3 && lng > 119.5 && lng < 122.1) regions.push('taiwan');
 
+  // Latin America
+  if (lat > -35 && lat < 13 && lng > -82 && lng < -34) regions.push('latin-america');
+  // Africa
+  if (lat > -35 && lat < 37 && lng > -20 && lng < 55) regions.push('africa');
+
   // Asia (includes Middle East, SE Asia, overriding parts of china but that's ok they can both load)
   if ((lat > -10 && lat < 60 && lng > 60 && lng < 150)) regions.push('asia');
   // Australia explicitly
   if (lat > -45 && lat < -10 && lng > 110 && lng < 155) regions.push('asia');
 
-  return regions.length > 0 ? regions : ['uk', 'us-east']; // Default fallback
+  return regions.length > 0 ? regions : ['global', 'uk', 'us-east']; // Default fallback
 }
 
 export async function GET(request: Request) {
