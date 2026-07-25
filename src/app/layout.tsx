@@ -109,7 +109,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "🛰️ OpenSpy — Open Source Palantir Alternative | Live Tracking + OSINT Tools",
+    title: "OpenSpy — Open Source Intelligence Platform | Live Tracking + OSINT Tools",
     description: "Track 10K+ flights, satellites & CCTV worldwide. Run Nmap, DNS, WHOIS scans from your browser. 20+ live intel feeds. Free & open source.",
     creator: "@simplifaisoul",
     site: "@simplifaisoul",

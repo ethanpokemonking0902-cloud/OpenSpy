@@ -8,18 +8,18 @@ interface ViewPresetsProps {
 }
 
 const PRESETS = [
-  { label: 'GLOBAL', lat: 20, lng: 0, zoom: 2.5, icon: '🌍' },
-  { label: 'EUROPE', lat: 48, lng: 10, zoom: 4, icon: '🇪🇺' },
-  { label: 'MIDDLE EAST', lat: 30, lng: 45, zoom: 4.5, icon: '🔥', hot: true },
-  { label: 'EAST ASIA', lat: 35, lng: 120, zoom: 4, icon: '🌏' },
-  { label: 'AMERICAS', lat: 25, lng: -90, zoom: 3, icon: '🌎' },
-  { label: 'UKRAINE', lat: 49, lng: 32, zoom: 6, icon: '⚔️', hot: true },
-  { label: 'AFRICA', lat: 5, lng: 20, zoom: 3.5, icon: '🌍' },
-  { label: 'S.E. ASIA', lat: 10, lng: 110, zoom: 4.5, icon: '🌏' },
-  { label: 'ARCTIC', lat: 75, lng: 0, zoom: 3.5, icon: '❄️' },
-  { label: 'INDIA', lat: 22, lng: 78, zoom: 4.5, icon: '🇮🇳' },
-  { label: 'AUSTRALIA', lat: -25, lng: 134, zoom: 4, icon: '🇦🇺' },
-  { label: 'SUDAN', lat: 15, lng: 30, zoom: 5.5, icon: '⚠️', hot: true },
+  { label: 'GLOBAL', lat: 20, lng: 0, zoom: 2.5, icon: 'Globe' },
+  { label: 'EUROPE', lat: 48, lng: 10, zoom: 4, icon: 'Map' },
+  { label: 'MIDDLE EAST', lat: 30, lng: 45, zoom: 4.5, icon: 'Flame', hot: true },
+  { label: 'EAST ASIA', lat: 35, lng: 120, zoom: 4, icon: 'Globe' },
+  { label: 'AMERICAS', lat: 25, lng: -90, zoom: 3, icon: 'Globe' },
+  { label: 'UKRAINE', lat: 49, lng: 32, zoom: 6, icon: 'AlertTriangle', hot: true },
+  { label: 'AFRICA', lat: 5, lng: 20, zoom: 3.5, icon: 'Globe' },
+  { label: 'S.E. ASIA', lat: 10, lng: 110, zoom: 4.5, icon: 'Globe' },
+  { label: 'ARCTIC', lat: 75, lng: 0, zoom: 3.5, icon: 'Wind' },
+  { label: 'INDIA', lat: 22, lng: 78, zoom: 4.5, icon: 'Map' },
+  { label: 'AUSTRALIA', lat: -25, lng: 134, zoom: 4, icon: 'Map' },
+  { label: 'SUDAN', lat: 15, lng: 30, zoom: 5.5, icon: 'AlertTriangle', hot: true },
 ];
 
 export default function ViewPresets({ onNavigate }: ViewPresetsProps) {
