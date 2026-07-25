@@ -1089,7 +1089,6 @@ function OsintPanelInner({ isMobile, onSweepVisualize, onScanGeolocate }: OsintP
     // Fallback for other tools
     return renderFallback();
   };
-  };
 
   const renderFallback = () => {
     if (!results) return null;
