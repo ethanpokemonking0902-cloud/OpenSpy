@@ -105,30 +105,12 @@ export default function Dashboard() {
   const [headerVisible, setHeaderVisible] = useState(true);
   const sidebarHideTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // Remove auto-hide - sidebars only close on click-outside or manual toggle
+  // Sidebars always visible - no auto-hide or click-outside close
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      
-      // Close left sidebar if clicking outside it
-      if (leftSidebarVisible && !target.closest('[data-sidebar="left"]') && !target.closest('button[data-toggle="left"]')) {
-        setLeftSidebarVisible(false);
-      }
-      
-      // Close right sidebar if clicking outside it
-      if (rightSidebarVisible && !target.closest('[data-sidebar="right"]') && !target.closest('button[data-toggle="right"]')) {
-        setRightSidebarVisible(false);
-      }
-      
-      // Close header if clicking outside it
-      if (headerVisible && !target.closest('[data-header]') && !target.closest('button[data-toggle="header"]')) {
-        setHeaderVisible(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [leftSidebarVisible, rightSidebarVisible, headerVisible]);
+    setLeftSidebarVisible(true);
+    setRightSidebarVisible(true);
+    setHeaderVisible(true);
+  }, []);
   const [showLayers, setShowLayers] = useState(true);
   const [showMarkets, setShowMarkets] = useState(false);
   const [showAlerts, setShowAlerts] = useState(false);
@@ -611,8 +593,8 @@ export default function Dashboard() {
   return (
     <main className="fixed inset-0 w-full h-full bg-[var(--bg-void)] overflow-hidden">
 
-      {/* Left sidebar notches */}
-      {!leftSidebarVisible && (
+      {/* Left sidebar notches - hidden since sidebar always visible */}
+      {false && (
         <motion.button
           onClick={() => setLeftSidebarVisible(true)}
           initial={{ opacity: 0 }}
@@ -632,8 +614,8 @@ export default function Dashboard() {
         </motion.button>
       )}
 
-      {/* Right sidebar notches */}
-      {!rightSidebarVisible && (
+      {/* Right sidebar notches - hidden since sidebar always visible */}
+      {false && (
         <motion.button
           onClick={() => setRightSidebarVisible(true)}
           initial={{ opacity: 0 }}
