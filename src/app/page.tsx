@@ -745,9 +745,9 @@ export default function Dashboard() {
         className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[200] flex flex-col gap-1.5 pointer-events-none"
       >
         {/* Unified Control Strip */}
-        <div className="flex items-center gap-1.5 pointer-events-auto">
+        <div className="map-controls flex items-center gap-1.5 pointer-events-auto">
           {/* Projection Toggle (Globe / 2D) */}
-          <div className="flex items-center rounded-xl overflow-hidden glass-panel">
+          <div className="map-button-group flex items-center rounded-xl overflow-hidden glass-panel">
             <button
               onClick={() => setMapProjection('globe')}
               className={`flex items-center gap-1.5 px-3 py-2 text-[9px] font-mono tracking-wider transition-all duration-200 ${
@@ -776,7 +776,7 @@ export default function Dashboard() {
           </div>
 
           {/* Style Toggle (Night / Satellite) */}
-          <div className="flex items-center rounded-xl overflow-hidden glass-panel">
+          <div className="map-button-group flex items-center rounded-xl overflow-hidden glass-panel">
             <button
               onClick={() => setMapStyle('dark')}
               className={`flex items-center gap-1.5 px-3 py-2 text-[9px] font-mono tracking-wider transition-all duration-200 ${
@@ -859,12 +859,12 @@ export default function Dashboard() {
 
       {/* ── CAMERAS BADGE (always visible) ── */}
       <motion.div 
-        className="absolute top-4 right-6 z-[200] glass-panel px-3 py-1.5 flex items-center gap-3 text-[8px] font-mono tracking-widest text-[#E0E0E0] rounded-full pointer-events-none"
+        className="badge-cameras"
         title="CCTV cameras found and countries with coverage"
       >
-        <span>CAMERAS: <span className={data.cameras?.length > 0 ? 'text-[#E0E0E0]' : 'text-[var(--alert-red)]'}>{data.cameras?.length || 0}</span></span>
+        <span>CAMERAS:</span> <span className={data.cameras?.length > 0 ? 'text-[#E0E0E0]' : 'text-[var(--alert-red)]'}>{data.cameras?.length || 0}</span>
         <div className="w-px h-4 bg-white/20" />
-        <span>COUNTRIES: <span className="text-[#E0E0E0]">{new Set(data.cameras?.map((c: any) => c.country).filter(Boolean)).size || 0}</span></span>
+        <span>COUNTRIES:</span> <span className="text-[#E0E0E0]">{new Set(data.cameras?.map((c: any) => c.country).filter(Boolean)).size || 0}</span>
       </motion.div>
 
       {/* ── MOBILE: Compact top status ── */}

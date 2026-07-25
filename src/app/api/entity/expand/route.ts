@@ -56,7 +56,7 @@ export async function GET(req: Request) {
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
       return NextResponse.json(
-        { error: body.error || `Intel layer returned ${res.status}`, nodes: [], links: [] },
+        { error: body.error || `Intel layer returned ${res.status}`, nodes: [], links: [], fallback: true },
         { status: res.status },
       );
     }
@@ -68,7 +68,7 @@ export async function GET(req: Request) {
   } catch (e) {
     console.error('[OpenSpy] Intel proxy error:', e instanceof Error ? e.message : e);
     return NextResponse.json(
-      { error: 'Intelligence layer unavailable', nodes: [], links: [] },
+      { error: 'Intelligence layer unavailable', nodes: [], links: [], fallback: true },
       { status: 502 },
     );
   }

@@ -54,6 +54,7 @@ function EntityGraphPanel({ entity, onClose }: Props) {
   const [graphData, setGraphData] = useState<GraphData>({ nodes: [], links: [] });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
   const [selectedNode, setSelectedNode] = useState<EntityNode | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
@@ -82,7 +83,9 @@ function EntityGraphPanel({ entity, onClose }: Props) {
   const expandEntity = useCallback(async (type: string, id: string, properties?: Record<string, any>) => {
     const key = `${type}:${id}`;
     if (expandedIds.has(key)) return;
-    setLoading(true); setError(null);
+    setLoading(true);
+    setError(null);
+    setWarning(null);
     try {
       const params = new URLSearchParams({ type, id });
       // Forward extra properties for aircraft/vessel resolution
@@ -92,11 +95,24 @@ function EntityGraphPanel({ entity, onClose }: Props) {
       const res = await fetch(`/api/entity/expand?${params}`, { cache: 'no-store' });
       if (!res.ok) { const b = await res.json().catch(() => ({})); throw new Error(b.error || `HTTP ${res.status}`); }
       const data = await res.json();
+      if (data.fallback) {
+        setWarning('Intelligence layer unavailable; showing available local entity data only.');
+      }
       setGraphData(prev => mergeGraph(prev, { nodes: data.nodes || [], links: data.links || [] }));
       setExpandedIds(prev => new Set([...prev, key]));
-    } catch (e) { setError(e instanceof Error ? e.message : 'Expansion failed'); }
-    finally { setLoading(false); }
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Expansion failed';
+      const normalized = message.toLowerCase();
+      if (normalized.includes('intel layer') || normalized.includes('intelligence layer unavailable') || normalized.includes('http 502') || normalized.includes('http 503') || normalized.includes('failed to fetch') || normalized.includes('network')) {
+        setWarning('Intelligence layer unavailable; showing available local entity data only.');
+      } else {
+        setError(message);
+      }
+    } finally { setLoading(false); }
   }, [expandedIds, mergeGraph]);
+
+  const fallbackMode = warning && graphData.links.length === 0;
+  const fallbackLabel = fallbackMode ? 'Deep dive failed to load additional graph data. Showing the target entity details below.' : '';
 
   useEffect(() => {
     if (!entity) return;
@@ -264,7 +280,18 @@ function EntityGraphPanel({ entity, onClose }: Props) {
           </div>
         )}
 
-        {/* ERROR */}
+        {/* ERROR/WARNING */}
+        {warning && (
+          <div className="px-6 py-2 bg-[#FFC107]/10 border-b border-[#FFC107]/30 flex items-center gap-2 relative z-20 shadow-[inset_0_0_15px_rgba(255,193,7,0.2)]">
+            <AlertTriangle className="w-3.5 h-3.5 text-[#FFC107]" />
+            <span className="text-[10px] font-mono font-bold tracking-widest text-[#FFC107] uppercase">[ WARN: {warning} ]</span>
+          </div>
+        )}
+        {fallbackMode && (
+          <div className="px-6 py-3 bg-[#FFC107]/8 border-b border-[#FFC107]/20 text-[10px] font-mono text-[#FFC107] relative z-20">
+            {fallbackLabel}
+          </div>
+        )}
         {error && (
           <div className="px-6 py-2 bg-[#FF1744]/10 border-b border-[#FF1744]/30 flex items-center gap-2 relative z-20 shadow-[inset_0_0_15px_rgba(255,23,68,0.2)]">
             <AlertTriangle className="w-3.5 h-3.5 text-[#FF1744]" />
@@ -334,6 +361,15 @@ function EntityGraphPanel({ entity, onClose }: Props) {
                 }} className="btn-tactical w-full mt-4 flex items-center justify-center gap-2" disabled={loading}>
                   {loading ? <Loader2 className="w-3.5 h-3.5 text-[var(--gold-primary)] animate-spin" /> : <RefreshCw className="w-3.5 h-3.5 text-[var(--gold-primary)]" />}
                   <span className="text-[11px] font-mono font-bold text-[var(--gold-primary)] tracking-[0.2em]">[ ACQUIRE TARGET DATA ]</span>
+                </button>
+              )}
+              {fallbackMode && (
+                <button onClick={() => {
+                  const rawId = selectedNode.id.includes(':') ? selectedNode.id.split(':').slice(1).join(':') : selectedNode.id;
+                  expandEntity(selectedNode.type, rawId, selectedNode.properties);
+                }} className="btn-tactical w-full mt-3 flex items-center justify-center gap-2 border border-[#FFC107]/40 bg-[#FFC107]/10 text-[#FFC107]" disabled={loading}>
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span className="text-[11px] font-mono font-bold tracking-[0.2em]">RETRY DEEP DIVE</span>
                 </button>
               )}
             </motion.div>

@@ -403,6 +403,110 @@ html, body {
 }
 .layer-toggle.active::after { left: 15px; background: var(--gold-primary); box-shadow: 0 0 8px rgba(var(--gold-rgb), 0.5); }
 
+/* ── Map Control Buttons (Highlighted & Rounded) ── */
+.map-controls {
+  display: flex;
+  gap: 6px;
+  flex-direction: column;
+  align-items: center;
+}
+
+.map-controls button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border-primary);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+  font-size: 10px;
+  font-family: var(--font-hud);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.map-controls button:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--border-primary);
+  color: var(--text-secondary);
+}
+
+.map-controls button.active,
+.map-controls button[data-active="true"] {
+  background: rgba(var(--gold-rgb), 0.15);
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+  box-shadow: 0 0 12px rgba(var(--gold-rgb), 0.2);
+}
+
+/* ── Map Button Group (Flexbox container) ── */
+.map-button-group {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-primary);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.map-button-group button {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  padding: 8px 14px;
+  font-size: 9px;
+}
+
+.map-button-group button:first-child {
+  border-radius: 11px 0 0 11px;
+}
+
+.map-button-group button:last-child {
+  border-radius: 0 11px 11px 0;
+}
+
+.map-button-group button.active {
+  background: rgba(var(--gold-rgb), 0.2);
+  box-shadow: inset 0 0 12px rgba(var(--gold-rgb), 0.1);
+}
+
+/* ── Badges (Cameras, Status Indicators) ── */
+.badge-cameras,
+.badge-status {
+  position: fixed;
+  z-index: 201;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(15, 15, 15, 0.95);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 9px;
+  font-family: var(--font-hud);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.badge-cameras span {
+  color: var(--gold-primary);
+  font-weight: 700;
+}
+
+.badge-cameras div {
+  width: 1px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
 /* ── Risk Badges ── */
 .risk-critical { color: #FF3D3D; text-shadow: 0 0 8px rgba(255, 61, 61, 0.5); }
 .risk-high { color: #FF9500; text-shadow: 0 0 8px rgba(255, 149, 0, 0.3); }
@@ -428,7 +532,79 @@ html, body {
 
 /* ── Mobile Bottom Nav ── */
 .mobile-nav {
-  display: none !important;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 52px;
+  z-index: 9995;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 8px;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.mobile-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.mobile-nav-inner {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  width: 100%;
+  padding: 0 4px;
+}
+
+.mobile-nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border-secondary);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+  font-size: 8px;
+  font-family: var(--font-hud);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  min-width: 50px;
+}
+
+.mobile-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--border-primary);
+  color: var(--text-secondary);
+}
+
+.mobile-nav-btn.active {
+  background: rgba(var(--gold-rgb), 0.15);
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+  box-shadow: 0 0 12px rgba(var(--gold-rgb), 0.2);
+}
+
+.mobile-drawer-handle {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  margin-bottom: 8px;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -446,60 +622,156 @@ html, body {
   :root { --edge-pad: 8px; --panel-gap: 6px; }
 
   .desktop-only { display: none !important; }
-  .mobile-nav { display: none !important; }
 
-  /* Show everything like desktop */
+  /* ── Mobile Nav ── */
+  .mobile-nav { display: flex !important; }
+
+  /* ── Show everything like desktop ── */
   .desktop-panel { display: block !important; }
 
   /* Keep corner frames hidden */
   .corner-frame { display: none !important; }
 
-  /* Adjust map popups for touch */
-  .maplibregl-popup { max-width: 90vw !important; font-size: 12px !important; }
-  .maplibregl-popup-content { max-width: 90vw !important; padding: 10px !important; }
-  .maplibregl-popup-close-button { font-size: 18px !important; padding: 4px 8px !important; }
+  /* ── Map Popup Fixes ── */
+  .maplibregl-popup {
+    max-width: calc(100vw - 20px) !important;
+    font-size: 12px !important;
+  }
 
-  /* Glass panel mobile tweaks */
-  .glass-panel { border-radius: 12px; font-size: 12px; }
+  .maplibregl-popup-content {
+    max-width: calc(100vw - 20px) !important;
+    padding: 10px !important;
+    border-radius: 8px !important;
+  }
+
+  .maplibregl-popup-close-button {
+    font-size: 18px !important;
+    padding: 4px 8px !important;
+  }
+
+  /* ── Glass panel mobile tweaks ── */
+  .glass-panel {
+    border-radius: 12px;
+    font-size: 12px;
+  }
 
   /* Touch-friendly buttons */
-  button { min-height: 44px; min-width: 44px; }
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
 
-  /* Scale sidebars smaller but keep visible */
-  .sidebar { font-size: 12px; }
-  
-  /* Make text readable */
+  /* ── Scale sidebars smaller but keep visible ── */
+  .sidebar {
+    font-size: 12px;
+    width: 180px !important;
+    max-height: 50vh !important;
+  }
+
+  /* ── Make text readable ── */
   body { font-size: 13px; }
-  
-  /* Hide mobile drawer completely */
-  .mobile-drawer { display: none !important; }
+
+  /* ── Badge positioning (top-right, avoid clip with header) ── */
+  .badge-cameras {
+    top: 50px !important;
+    right: 8px !important;
+    font-size: 8px !important;
+    padding: 6px 8px !important;
+    border-radius: 6px !important;
+    z-index: 201;
+  }
+
+  /* ── Map control buttons (rounded) ── */
+  .map-controls button {
+    border-radius: 12px !important;
+    padding: 8px 12px !important;
+    font-size: 9px !important;
+  }
+
+  .map-controls button.rounded {
+    border-radius: 16px !important;
+  }
+
+  /* ── Prevent header clip ── */
+  [class*="header"] {
+    z-index: 200;
+    padding-bottom: 4px;
+  }
+
+  /* ── Mobile drawer padding for safe area ── */
+  .mobile-drawer-content {
+    padding-bottom: env(safe-area-inset-bottom, 12px);
+  }
 }
 
 /* Small phones */
 @media (max-width: 390px) {
   :root { --edge-pad: 6px; }
+  
   /* Keep desktop layout, just scale text slightly */
   body { font-size: 12px; }
   .glass-panel { font-size: 11px; padding: 6px; }
   button { min-height: 40px; min-width: 40px; }
+
+  /* ── Compact mobile nav ── */
+  .mobile-nav-btn {
+    min-width: 44px;
+    padding: 5px 8px;
+    font-size: 7px;
+  }
+
+  /* ── Badge more compact ── */
+  .badge-cameras {
+    font-size: 7px !important;
+    padding: 4px 6px !important;
+  }
+
+  /* ── Sidebar narrower ── */
+  .sidebar {
+    width: 140px !important;
+  }
 }
 
 /* ── Landscape mobile ── */
 @media (max-height: 500px) and (max-width: 1024px) {
   :root { --edge-pad: 6px; }
+  
   /* Keep desktop layout visible */
   body { font-size: 12px; }
   .glass-panel { font-size: 11px; }
+
+  /* Compress header for landscape */
+  [class*="header"] {
+    padding: 2px 4px;
+    gap: 4px;
+  }
+
+  /* Make nav sticky */
+  .mobile-nav {
+    bottom: auto !important;
+    top: 0 !important;
+    height: 40px !important;
+  }
+
+  /* Adjust badge position for landscape */
+  .badge-cameras {
+    top: 42px !important;
+  }
 }
 
 /* Safe area for notched phones */
 @supports (padding: env(safe-area-inset-bottom)) {
-  .mobile-nav { padding-bottom: env(safe-area-inset-bottom); }
+  .mobile-nav {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }
 
 /* Safe area for horizontal notch (landscape) */
 @supports (padding: env(safe-area-inset-left)) {
-  .mobile-nav { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+  .mobile-nav {
+    padding-left: max(8px, env(safe-area-inset-left));
+    padding-right: max(8px, env(safe-area-inset-right));
+  }
 }
 
 /* ── Widescreen / Ultrawide Scaling ── */

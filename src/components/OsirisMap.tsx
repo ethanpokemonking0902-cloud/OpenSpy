@@ -656,9 +656,21 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
         'radiation': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor" style="display:inline;vertical-align:middle;margin-right:4px;"><circle cx="12" cy="12" r="2"/><circle cx="12" cy="4" r="1.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="20" r="1.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="12" r="1.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="4" cy="12" r="1.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 4l2.5 2.5M12 20l-2.5-2.5M20 12l-2.5 2.5M4 12l2.5-2.5"/></svg>`,
         'weather': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M6 10c-1.67 0-3-1.34-3-3 0-1.5 1.12-2.75 2.54-2.95C6.09 2.41 7.67 1 9.5 1 11.56 1 13.24 2.75 13.5 5h1c2.21 0 4 1.79 4 4s-1.79 4-4 4H6z"/></svg>`,
         'source': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+        'target': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>`,
+        'building': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M4 21V5a1 1 0 0 1 1-1h5v18H5a1 1 0 0 1-1-1z"/><path d="M20 21V10a1 1 0 0 0-1-1h-5v12h6a1 1 0 0 0 1-1z"/><path d="M9 7h1M9 11h1M9 15h1M14 7h1M14 11h1M14 15h1"/></svg>`,
+        'warning': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M12 3l9 16H3l9-16z"/><line x1="12" y1="8" x2="12" y2="13"/><circle cx="12" cy="17" r="1"/></svg>`,
+        'anchor': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><circle cx="12" cy="5" r="3"/><path d="M12 8v8"/><path d="M9 19a3 3 0 0 0 6 0"/><path d="M5 13a7 7 0 0 1 14 0"/></svg>`,
+        'shield': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M12 3l8 4v5c0 5-3.7 9.7-8 11-4.3-1.3-8-6-8-11V7l8-4z"/></svg>`,
+        'intel': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M12 5a7 7 0 0 1 7 7c0 3.8-3.1 7-7 7s-7-3.2-7-7a7 7 0 0 1 7-7z"/><path d="M12 2v3"/><path d="M12 19v3"/><path d="M5 12H2"/><path d="M22 12h-3"/></svg>`,
       };
       return icons[type] || '';
     };
+
+    const popupHeading = (icon: string, label: string, color = '#E0E0E0', size = 14) =>
+      `<div style="display:flex;align-items:center;gap:6px;color:${color};font-size:12px;font-weight:700;letter-spacing:0.08em;margin-bottom:6px;">${getSVGIcon(icon, size)}${htmlEsc(label)}</div>`;
+
+    const popupLink = (href: string, label: string, color = '#E0E0E0', bg = 'rgba(224,224,224,0.1)', border = 'rgba(224,224,224,0.4)') =>
+      `<a href="${urlSafe(href)}" target="_blank" style="${linkStyle}color:${color};border:1px solid ${border};background:${bg};display:inline-flex;align-items:center;justify-content:center;">${getSVGIcon('link', 12)} ${htmlEsc(label)}</a>`;
 
     // ── XSS PROTECTION HELPERS ──
     const htmlEsc = (s: any): string => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
@@ -687,11 +699,11 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
             <div><span style="color:#A0A0A0;font-size:9px;">POS</span><br/><span style="color:#E0E0E0;">${coords[1].toFixed(2)},${coords[0].toFixed(2)}</span></div>
           </div>
           <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;">
-            <a href="https://www.flightaware.com/live/flight/${encodeURIComponent(cs)}" target="_blank" style="${linkStyle}color:#E0E0E0;border:1px solid rgba(224,224,224,0.4);background:rgba(224,224,224,0.1);">FLIGHTAWARE</a>
-            <a href="https://globe.adsbexchange.com/?icao=${encodeURIComponent(p.icao24||'')}" target="_blank" style="${linkStyle}color:#FFFFFF;border:1px solid rgba(255,255,255,0.4);background:rgba(255,255,255,0.1);">ADS-B</a>
-            <a href="https://www.radarbox.com/data/flights/${encodeURIComponent(cs)}" target="_blank" style="${linkStyle}color:#FF69B4;border:1px solid rgba(255,105,180,0.4);background:rgba(255,105,180,0.1);">RADARBOX</a>
+            ${popupLink(`https://www.flightaware.com/live/flight/${encodeURIComponent(cs)}`, 'FLIGHTAWARE', '#E0E0E0', 'rgba(224,224,224,0.1)', 'rgba(224,224,224,0.4)')}
+            ${popupLink(`https://globe.adsbexchange.com/?icao=${encodeURIComponent(p.icao24||'')}`, 'ADS-B', '#FFFFFF', 'rgba(255,255,255,0.1)', 'rgba(255,255,255,0.4)')}
+            ${popupLink(`https://www.radarbox.com/data/flights/${encodeURIComponent(cs)}`, 'RADARBOX', '#FF69B4', 'rgba(255,105,180,0.1)', 'rgba(255,105,180,0.4)')}
           </div>
-          <button onclick="window.openOpenSpyIntel({ callsign: '${idSafe(cs)}', icao24: '${idSafe(p.icao24||'')}', model: '${idSafe(p.model||'')}', registration: '${idSafe(p.registration||'')}' })" style="width:100%;margin-top:8px;padding:6px 12px;background:rgba(224,224,224,0.15);border:1px solid rgba(224,224,224,0.5);color:#E0E0E0;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:bold;letter-spacing:0.1em;border-radius:4px;cursor:pointer;">[ DEEP DIVE INTEL ]</button>
+          <button onclick="window.openOpenSpyIntel({ callsign: '${idSafe(cs)}', icao24: '${idSafe(p.icao24||'')}', model: '${idSafe(p.model||'')}', registration: '${idSafe(p.registration||'')}' })" style="width:100%;margin-top:8px;padding:8px 12px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#FFFFFF;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:bold;letter-spacing:0.12em;border-radius:4px;cursor:pointer;">${getSVGIcon('intel', 12)} INTEL DEEP DIVE</button>
         </div>`);
       });
       map.on('mouseenter', layer, () => { map.getCanvas().style.cursor = 'pointer'; });
@@ -728,13 +740,13 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
       const p = e.features[0].properties as any;
       const coords = (e.features[0].geometry as any).coordinates;
       popup(coords, `<div style="${pStyle}border:1px solid rgba(208,208,208,0.3);">
-        <div style="color:#D0D0D0;font-size:14px;font-weight:700;margin-bottom:4px;">${getSVGIcon('earthquake', 14)} M${p.magnitude} EARTHQUAKE</div>
+        ${popupHeading('earthquake', `M${p.magnitude} EARTHQUAKE`, '#D0D0D0', 14)}
         <div style="font-size:9px;color:#E8E6E0;margin-bottom:8px;">${htmlEsc(p.place||'Unknown location')}</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:9px;">
           <div><span style="color:#5C5A54;">DEPTH</span><br/><span style="color:#E8E6E0;">${p.depth||'—'}km</span></div>
           <div><span style="color:#5C5A54;">COORDS</span><br/><span style="color:#E8E6E0;">${coords[1].toFixed(3)}, ${coords[0].toFixed(3)}</span></div>
         </div>
-        <a href="${p.source === 'NIGGG-BAS' ? 'https://ndc.niggg.bas.bg/' : `https://earthquake.usgs.gov/earthquakes/eventpage/${encodeURIComponent(p.id||'')}`}" target="_blank" style="${linkStyle}color:#D0D0D0;border:1px solid rgba(208,208,208,0.4);background:rgba(208,208,208,0.1);">${p.source === 'NIGGG-BAS' ? 'NIGGG-BAS' : 'USGS DETAILS'} ↗</a>
+        ${popupLink(p.source === 'NIGGG-BAS' ? 'https://ndc.niggg.bas.bg/' : `https://earthquake.usgs.gov/earthquakes/eventpage/${encodeURIComponent(p.id||'')}`, p.source === 'NIGGG-BAS' ? 'NIGGG-BAS' : 'USGS DETAILS', '#D0D0D0', 'rgba(208,208,208,0.1)', 'rgba(208,208,208,0.4)')}
       </div>`);
     });
 
@@ -744,13 +756,13 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
       const p = e.features[0].properties as any;
       const coords = (e.features[0].geometry as any).coordinates;
       popup(coords, `<div style="${pStyle}border:1px solid rgba(224,224,224,0.3);">
-        <div style="color:#E0E0E0;font-size:12px;font-weight:700;letter-spacing:0.1em;margin-bottom:4px;">${getSVGIcon('satellite', 14)} ${htmlEsc(p.name)}</div>
+        ${popupHeading('satellite', htmlEsc(p.name), '#E0E0E0', 14)}
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;font-size:9px;margin-bottom:8px;">
           <div><span style="color:#5C5A54;">MISSION</span><br/><span style="color:${colorSafe(p.color)};">${htmlEsc(p.mission||'Unknown')}</span></div>
           <div><span style="color:#5C5A54;">ALT</span><br/><span style="color:#E0E0E0;">${p.alt ? p.alt+' km' : '—'}</span></div>
           <div><span style="color:#5C5A54;">POS</span><br/><span style="color:#E8E6E0;">${coords[1].toFixed(2)}°, ${coords[0].toFixed(2)}°</span></div>
         </div>
-        ${p.noradId ? `<a href="https://www.n2yo.com/satellite/?s=${p.noradId}" target="_blank" style="display:block;text-align:center;padding:4px;margin-top:6px;font-size:8px;font-family:monospace;letter-spacing:0.1em;text-decoration:none;color:#E0E0E0;border:1px solid rgba(224,224,224,0.4);background:rgba(224,224,224,0.1);border-radius:2px;cursor:pointer;">TRACK ON N2YO ↗</a>` : ''}
+        ${p.noradId ? popupLink(`https://www.n2yo.com/satellite/?s=${p.noradId}`, 'TRACK ON N2YO', '#E0E0E0', 'rgba(224,224,224,0.1)', 'rgba(224,224,224,0.4)') : ''}
       </div>`);
     });
 
@@ -760,12 +772,12 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
       const p = e.features[0].properties as any;
       const coords = (e.features[0].geometry as any).coordinates;
       popup(coords, `<div style="${pStyle}border:1px solid rgba(208,208,208,0.3);">
-        <div style="color:#D0D0D0;font-size:12px;font-weight:700;margin-bottom:6px;">${getSVGIcon('fire', 14)} ACTIVE FIRE DETECTED</div>
+        ${popupHeading('fire', 'ACTIVE FIRE DETECTED', '#D0D0D0', 14)}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:9px;margin-bottom:8px;">
           <div><span style="color:#5C5A54;">BRIGHTNESS</span><br/><span style="color:#D0D0D0;">${p.brightness||'—'}K</span></div>
           <div><span style="color:#5C5A54;">COORDS</span><br/><span style="color:#E8E6E0;">${coords[1].toFixed(3)}°, ${coords[0].toFixed(3)}°</span></div>
         </div>
-        <a href="https://firms.modaps.eosdis.nasa.gov/map/#d:24hrs;l:noaa20-viirs,viirs,modis_a,modis_t;@${coords[0]},${coords[1]},10z" target="_blank" style="${linkStyle}color:#D0D0D0;border:1px solid rgba(208,208,208,0.4);background:rgba(208,208,208,0.1);">NASA FIRMS MAP ↗</a>
+        ${popupLink(`https://firms.modaps.eosdis.nasa.gov/map/#d:24hrs;l:noaa20-viirs,viirs,modis_a,modis_t;@${coords[0]},${coords[1]},10z`, 'NASA FIRMS MAP', '#D0D0D0', 'rgba(208,208,208,0.1)', 'rgba(208,208,208,0.4)')}
       </div>`);
     });
 
@@ -778,19 +790,15 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
       const statusColor = p.status === 'online' ? '#39FF14' : '#FF1744';
       
       popup(coords, `<div style="${pStyle}border:1px solid rgba(255,23,68,0.4);box-shadow:inset 0 0 12px rgba(255,23,68,0.1);">
-        <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,23,68,0.3);padding-bottom:6px;margin-bottom:8px;">
-          <div style="color:#FF1744;font-size:12px;font-weight:700;letter-spacing:0.1em;text-shadow:0 0 4px rgba(255,23,68,0.5);">[ ${htmlEsc(tType)} ]</div>
-          <div style="color:#5C5A54;font-size:9px;">${htmlEsc(p.country || 'UNKNOWN')}</div>
-        </div>
+        ${popupHeading('warning', `${htmlEsc(tType)} THREAT`, '#FF1744', 12)}
+        <div style="color:#5C5A54;font-size:9px;margin-bottom:8px;">${htmlEsc(p.country || 'UNKNOWN')}</div>
         <div style="color:#E8E6E0;font-size:11px;font-weight:bold;margin-bottom:10px;">${htmlEsc(p.malware || 'Unidentified Threat Payload')}</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:9px;margin-bottom:12px;background:rgba(0,0,0,0.3);padding:6px;border-radius:4px;">
           <div><span style="color:#5C5A54;">TARGET IP</span><br/><span style="color:#E0E0E0;font-family:monospace;">${htmlEsc(p.ip)}</span></div>
           <div><span style="color:#5C5A54;">STATUS</span><br/><span style="color:${statusColor};">${(p.status||'UNKNOWN').toUpperCase()}</span></div>
         </div>
-        <div style="display:flex;gap:6px;">
-          <a href="https://feodotracker.abuse.ch/browse/" target="_blank" style="${linkStyle}flex:1;text-align:center;color:#E8E6E0;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);">THREAT INTEL ↗</a>
-        </div>
-        <button onclick="window.openOpenSpyIntel({ type: 'ip', ip: '${idSafe(p.ip)}', threat_type: '${idSafe(p.malware || p.threat_type || '')}', status: '${idSafe(p.status || '')}' })" style="width:100%;margin-top:8px;padding:8px 12px;background:linear-gradient(90deg, rgba(255,23,68,0.1) 0%, rgba(255,23,68,0.2) 100%);border:1px solid rgba(255,23,68,0.6);color:#FF1744;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:bold;letter-spacing:0.15em;border-radius:4px;cursor:pointer;transition:all 0.2s;">DEEP DIVE ANALYTICS</button>
+        ${popupLink('https://feodotracker.abuse.ch/browse/', 'THREAT INTEL', '#E0E0E0', 'rgba(255,255,255,0.05)', 'rgba(255,255,255,0.2)')}
+        <button onclick="window.openOpenSpyIntel({ type: 'ip', ip: '${idSafe(p.ip)}', threat_type: '${idSafe(p.malware || p.threat_type || '')}', status: '${idSafe(p.status || '')}' })" style="width:100%;margin-top:8px;padding:8px 12px;background:rgba(255,23,68,0.12);border:1px solid rgba(255,23,68,0.6);color:#FF1744;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:bold;letter-spacing:0.12em;border-radius:4px;cursor:pointer;transition:all 0.2s;">${getSVGIcon('intel', 12)} DEEP DIVE ANALYTICS</button>
       </div>`);
     });
 
@@ -815,9 +823,9 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
       }
 
       popup(coords, `<div style="${pStyle}border:1px solid rgba(255,61,61,0.3);">
-        <div style="color:#FF3D3D;font-size:12px;font-weight:700;margin-bottom:6px;">CONFLICT EVENT</div>
+        ${popupHeading('warning', 'CONFLICT EVENT', '#FF3D3D', 12)}
         <div style="font-size:9px;color:#E8E6E0;margin-bottom:8px;line-height:1.4;">${htmlEsc(p.name||'Unclassified incident')}</div>
-        <a href="${urlSafe(sourceUrl)}" target="_blank" style="${linkStyle}flex:1;text-align:center;color:#FF3D3D;border:1px solid rgba(255,61,61,0.4);background:rgba(255,61,61,0.15);display:inline-block;width:100%;box-sizing:border-box;margin-top:4px;">[ OPEN SOURCE ↗ ]</a>
+        ${popupLink(sourceUrl, 'OPEN SOURCE', '#FF3D3D', 'rgba(255,61,61,0.15)', 'rgba(255,61,61,0.4)')}
       </div>`);
     });
 
@@ -828,13 +836,13 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
       const coords = (e.features[0].geometry as any).coordinates;
       const color = p.severity === 'war' ? '#FF1744' : p.severity === 'high' ? '#D0D0D0' : '#D0D0D0';
       popup(coords, `<div style="${pStyle}border:1px solid ${color}40;">
-        <div style="color:${color};font-size:12px;font-weight:700;margin-bottom:6px;">WARNING EVENT</div>
+        ${popupHeading('warning', 'WARNING EVENT', color, 12)}
         <div style="font-size:10px;color:#E8E6E0;margin-bottom:8px;line-height:1.4;">${htmlEsc(p.label || 'WARNING EVENT')} - ${htmlEsc(p.description || 'Global event detected at this location.')}</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:9px;margin-bottom:8px;">
           <div><span style="color:#5C5A54;">SEVERITY</span><br/><span style="color:${color};">${(p.severity||'unknown').toUpperCase()}</span></div>
           <div><span style="color:#5C5A54;">COORDS</span><br/><span style="color:#E8E6E0;">${coords[1].toFixed(3)}°, ${coords[0].toFixed(3)}°</span></div>
         </div>
-        ${p.sourceUrl ? `<a href="${urlSafe(p.sourceUrl)}" target="_blank" style="${linkStyle}flex:1;text-align:center;color:${color};border:1px solid ${color}40;background:${color}15;display:inline-block;width:100%;box-sizing:border-box;margin-top:4px;">[ OPEN SOURCE ↗ ]</a>` : ''}
+        ${p.sourceUrl ? popupLink(p.sourceUrl, 'OPEN SOURCE', color, `${color}15`, `${color}40`) : ''}
       </div>`);
     });
 
@@ -854,26 +862,22 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
         const p = e.features[0].properties as any;
         const coords = e.lngLat;
         const srcUrl = p.url || SDK_SOURCE_URLS[p.source] || 'https://openspy.live';
-        const domainLabel = p.domain === 'SEA' ? '⚓ MARITIME' : p.domain === 'AIR' ? '✈ AIR CORRIDOR' : '🛡 NAVAL INTEL';
         const domainColor = p.domain === 'SEA' ? '#4FC3F7' : p.domain === 'AIR' ? '#B3E5FC' : '#81D4FA';
-        const linkStyle = 'text-decoration:none;padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:0.05em;';
+        const domainIcon = p.domain === 'SEA' ? 'anchor' : p.domain === 'AIR' ? 'plane' : 'shield';
         popup([coords.lng, coords.lat], `<div style="${pStyle}border:1px solid ${domainColor}40;">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
-            <div style="width:8px;height:8px;border-radius:50%;background:${domainColor};box-shadow:0 0 8px ${domainColor};"></div>
-            <span style="color:${domainColor};font-size:11px;font-weight:700;letter-spacing:0.1em;">${domainLabel}</span>
-          </div>
+          ${popupHeading(domainIcon, p.domain === 'SEA' ? 'MARITIME' : p.domain === 'AIR' ? 'AIR CORRIDOR' : 'NAVAL INTEL', domainColor, 12)}
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:9px;margin-bottom:8px;">
             <div><span style="color:#5C5A54;">FROM</span><br/><span style="color:#E8E6E0;">${htmlEsc(p.fromName || 'Origin')}</span></div>
             <div><span style="color:#5C5A54;">TO</span><br/><span style="color:#E8E6E0;">${htmlEsc(p.toName || 'Destination')}</span></div>
-            <div><span style="color:#5C5A54;">DOMAIN</span><br/><span style="color:${domainColor};">${p.domain}</span></div>
-            <div><span style="color:#5C5A54;">SOURCE</span><br/><a href="${urlSafe(srcUrl)}" target="_blank" style="color:${domainColor};text-decoration:underline;cursor:pointer;">${htmlEsc(p.source || 'OPENSPY')}</a></div>
+            <div><span style="color:#5C5A54;">DOMAIN</span><br/><span style="color:${domainColor};">${htmlEsc(p.domain)}</span></div>
+            <div><span style="color:#5C5A54;">SOURCE</span><br/>${popupLink(srcUrl, p.source || 'OPENSPY', domainColor, 'transparent', domainColor)}</div>
           </div>
-          <a href="${urlSafe(srcUrl)}" target="_blank" style="${linkStyle}color:${domainColor};border:1px solid ${domainColor}40;background:${domainColor}18;display:inline-block;margin-top:4px;">OPEN SOURCE ↗</a>
+          ${popupLink(srcUrl, 'OPEN SOURCE', domainColor, `${domainColor}18`, `${domainColor}40`)}
         </div>`);
       });
     });
 
-    // ⚡ Live Cyber Attack Arcs (click on flying heads) ⚡
+    // Live Cyber Attack Arcs (click on flying heads)
     map.on('click', 'cyber-heads', e => {
       if (!e.features?.length) return;
       const p = e.features[0].properties as any;
@@ -913,13 +917,13 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
       if (!p) return;
       const coords = e.features[0].geometry.coordinates.slice();
       popup(coords, `<div style="${pStyle}border:1px solid rgba(255,61,61,0.5);">
-        <div style="color:#FF3D3D;font-size:12px;font-weight:700;margin-bottom:6px;">🎯 TARGET: ${htmlEsc(p.id)}</div>
-        <div style="font-size:9px;color:#E8E6E0;margin-bottom:8px;">${htmlEsc(p.city || 'Unknown')}, ${htmlEsc(p.country || 'Unknown')} — ${htmlEsc(p.isp || 'Unknown ISP')}</div>
+        ${popupHeading('target', `TARGET ${htmlEsc(p.id)}`, '#FF3D3D', 12)}
+        <div style="font-size:9px;color:#E6E6E6;margin-bottom:8px;">${htmlEsc(p.city || 'Unknown')}, ${htmlEsc(p.country || 'Unknown')} • ${htmlEsc(p.isp || 'Unknown ISP')}</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:9px;">
           <div><span style="color:#5C5A54;">TYPE</span><br/><span style="color:#E0E0E0;">${(p.type || 'UNKNOWN').toUpperCase()}</span></div>
           <div><span style="color:#5C5A54;">COORDS</span><br/><span style="color:#E8E6E0;">${coords[1].toFixed(3)}°, ${coords[0].toFixed(3)}°</span></div>
         </div>
-        <button onclick="window.openOpenSpyIntel({ type: 'ip', ip: '${idSafe(p.id)}' })" style="width:100%;margin-top:8px;padding:6px 12px;background:rgba(255,109,0,0.15);border:1px solid rgba(255,109,0,0.5);color:#FF6D00;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:bold;letter-spacing:0.1em;border-radius:4px;cursor:pointer;">[ IP INTEL DEEP DIVE ]</button>
+        <button onclick="window.openOpenSpyIntel({ type: 'ip', ip: '${idSafe(p.id)}' })" style="width:100%;margin-top:8px;padding:8px 12px;background:rgba(255,109,0,0.15);border:1px solid rgba(255,109,0,0.5);color:#FF6D00;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:bold;letter-spacing:0.12em;border-radius:4px;cursor:pointer;">${getSVGIcon('intel', 12)} IP INTEL DEEP DIVE</button>
       </div>`);
     });
 
@@ -934,13 +938,13 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
       let threatsHtml = '';
       if (activeThreats.length > 0) {
         threatsHtml = `<div style="margin-top:8px;padding-top:6px;border-top:1px solid ${color}40;color:${color};font-size:9px;font-weight:bold;">
-          ACTIVE THREATS:<br/>${activeThreats.map((t: string) => `⚠ ${htmlEsc(t)}`).join('<br/>')}
+          ${getSVGIcon('warning', 12)}ACTIVE THREATS:<br/>${activeThreats.map((t: string) => `${htmlEsc(t)}`).join('<br/>')}
         </div>`;
       }
 
       popup(coords, `<div style="${pStyle}border:1px solid ${color}40;">
-        <div style="color:${color};font-size:12px;font-weight:700;margin-bottom:4px;">🏢 ${htmlEsc(p.name)}</div>
-        <div style="font-size:9px;color:#aaa;margin-bottom:8px;">${htmlEsc(p.category)} | ${htmlEsc(p.city)}, ${htmlEsc(p.country)}</div>
+        ${popupHeading('building', htmlEsc(p.name), color, 12)}
+        <div style="font-size:9px;color:#aaa;margin-bottom:8px;">${htmlEsc(p.category)} • ${htmlEsc(p.city)}, ${htmlEsc(p.country)}</div>
         <div style="display:grid;grid-template-columns:1fr;gap:4px;font-size:11px;">
           <div><span style="color:#5C5A54;font-size:9px;">SCM RISK LEVEL</span><br/><span style="color:${color};font-weight:bold;">${p.risk_level}</span></div>
         </div>
@@ -958,16 +962,16 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
       const hostnames = JSON.parse(p.hostnames || '[]');
       const riskColors: Record<string, string> = { CRITICAL: '#FF3D3D', HIGH: '#FF6B00', MEDIUM: '#FFD700', LOW: '#76FF03', INFO: '#5C5A54' };
       popup(coords, `<div style="font-family:monospace;font-size:11px;color:#E8E6E0;">
-        <div style="font-size:13px;font-weight:bold;margin-bottom:6px;color:${p.color};">${p.device_type}</div>
+        <div style="font-size:13px;font-weight:bold;margin-bottom:6px;color:${p.color};">${getSVGIcon('link', 12)} ${p.device_type}</div>
         <div style="font-size:12px;margin-bottom:8px;color:#fff;">${p.ip}</div>
-        ${hostnames.length > 0 ? `<div style="font-size:9px;color:#8A8880;margin-bottom:6px;">${hostnames.join(', ')}</div>` : ''}
+        ${hostnames.length > 0 ? `<div style="font-size:9px;color:#8A8880;margin-bottom:6px;">${htmlEsc(hostnames.join(', '))}</div>` : ''}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
           <div><span style="color:#5C5A54;">PORTS</span><br/><span style="color:#E8E6E0;">${ports.length}</span></div>
           <div><span style="color:#5C5A54;">RISK</span><br/><span style="color:${riskColors[p.risk_level] || '#666'};">${p.risk_level}</span></div>
         </div>
         <div style="font-size:9px;color:#8A8880;margin-bottom:6px;">Open: ${ports.slice(0, 12).join(', ')}${ports.length > 12 ? ' ...' : ''}</div>
-        ${vulns.length > 0 ? `<div style="font-size:9px;color:#FF3D3D;margin-bottom:6px;">⚠ CVEs: ${vulns.slice(0, 5).join(', ')}${vulns.length > 5 ? ` +${vulns.length - 5} more` : ''}</div>` : ''}
-        <button onclick="window.openOpenSpyIntel({ type: 'ip', ip: '${p.ip}' })" style="width:100%;margin-top:6px;padding:6px 12px;background:rgba(255,109,0,0.15);border:1px solid rgba(255,109,0,0.5);color:#FF6D00;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:bold;letter-spacing:0.1em;border-radius:4px;cursor:pointer;">[ IP INTEL DEEP DIVE ]</button>
+        ${vulns.length > 0 ? `<div style="font-size:9px;color:#FF3D3D;margin-bottom:6px;">CVEs: ${htmlEsc(vulns.slice(0, 5).join(', '))}${vulns.length > 5 ? ` +${vulns.length - 5} more` : ''}</div>` : ''}
+        <button onclick="window.openOpenSpyIntel({ type: 'ip', ip: '${p.ip}' })" style="width:100%;margin-top:6px;padding:8px 12px;background:rgba(255,109,0,0.15);border:1px solid rgba(255,109,0,0.5);color:#FF6D00;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:bold;letter-spacing:0.12em;border-radius:4px;cursor:pointer;">${getSVGIcon('intel', 12)} IP INTEL DEEP DIVE</button>
       </div>`);
     });
 
@@ -1026,7 +1030,7 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
           <div><span style="color:#5C5A54;">LONGITUDE</span><br/><span style="color:#E8E6E0;font-family:monospace;">${coords[0].toFixed(4)}°</span></div>
         </div>
         <div><span style="color:#5C5A54;font-size:9px;">DESTINATION: </span><span style="color:#E8E6E0;font-size:9px;">${p.destination || 'UNKNOWN'}</span></div>
-        <a href="https://www.marinetraffic.com/en/ais/details/ships/mmsi:${p.mmsi}" target="_blank" style="${linkStyle}flex:1;text-align:center;color:${color};border:1px solid ${color}40;background:${color}15;display:inline-block;width:100%;box-sizing:border-box;margin-top:4px;">[ OPEN SOURCE ↗ ]</a>
+        ${popupLink(`https://www.marinetraffic.com/en/ais/details/ships/mmsi:${p.mmsi}`, 'OPEN SOURCE', color, `${color}15`, `${color}40`)}
       </div>`);
     });
 
@@ -1056,7 +1060,7 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
       const coords = (e.features[0].geometry as any).coordinates;
       const statusColor = p.status.includes('SEISMIC RISK') ? '#FF9500' : p.status === 'Active Conflict Zone' ? '#FF1744' : p.status === 'Operational' ? '#76FF03' : '#757575';
       popup(coords, `<div style="${pStyle}border:1px solid rgba(118,255,3,0.3);">
-        <div style="color:#76FF03;font-size:14px;font-weight:700;margin-bottom:4px;">${getSVGIcon('radiation', 14)} ${p.name || 'Nuclear Facility'}</div>
+        ${popupHeading('radiation', `${htmlEsc(p.name || 'Nuclear Facility')}`, '#76FF03', 14)}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:9px;margin-bottom:8px;">
           <div><span style="color:#5C5A54;">STATUS</span><br/><span style="color:${statusColor};">${p.status || '—'}</span></div>
           <div><span style="color:#5C5A54;">CITY</span><br/><span style="color:#E8E6E0;">${p.city || '—'}, ${p.country || ''}</span></div>
@@ -1065,7 +1069,7 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
           <div><span style="color:#5C5A54;">OWNER</span><br/><span style="color:#E8E6E0;">${p.owner || '—'}</span></div>
           <div><span style="color:#5C5A54;">COORDS</span><br/><span style="color:#E8E6E0;">${coords[1].toFixed(3)}°, ${coords[0].toFixed(3)}°</span></div>
         </div>
-        <a href="https://www.google.com/maps/@${coords[1]},${coords[0]},14z/data=!3m1!1e3" target="_blank" style="${linkStyle}color:#76FF03;border:1px solid rgba(118,255,3,0.4);background:rgba(118,255,3,0.1);">SATELLITE VIEW ↗</a>
+        ${popupLink(`https://www.google.com/maps/@${coords[1]},${coords[0]},14z/data=!3m1!1e3`, 'SATELLITE VIEW', '#76FF03', 'rgba(118,255,3,0.1)', 'rgba(118,255,3,0.4)')}
       </div>`);
     });
 
