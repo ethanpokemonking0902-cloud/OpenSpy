@@ -449,7 +449,7 @@ export default function Dashboard() {
       (async () => {
         try {
           const ts = Date.now();
-      const res = await fetch(`/data/submarine-cables.json?v=${ts}`);
+      const res = await fetch(`/data/submarine-cables-filtered.json?v=${ts}`);
           if (res.ok) {
              const cablesData = await res.json();
              dataRef.current = { ...dataRef.current, submarine_cables: cablesData.features };

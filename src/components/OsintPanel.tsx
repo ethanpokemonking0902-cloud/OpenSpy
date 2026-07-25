@@ -119,8 +119,10 @@ function OsintPanelInner({ isMobile, onSweepVisualize, onScanGeolocate }: OsintP
       const totalHosts = Math.pow(2, 32 - cidr);
       setSweepProgress({ current: 0, total: totalHosts });
       try {
+        const SCANNER_URL = process.env.NEXT_PUBLIC_SCANNER_URL || 'https://openspy.up.railway.app';
+        const SCANNER_KEY = process.env.NEXT_PUBLIC_SCANNER_KEY || '9768678debc56cb587003b8bf83722cf4092b59e366ea36799ad97757f0f7a4f';
         const t0 = Date.now();
-        const res = await fetch(`/api/osint/sweep?ip=${encodeURIComponent(query)}&cidr=${cidr}`);
+        const res = await fetch(`${SCANNER_URL}/api/osint/sweep?ip=${encodeURIComponent(query)}&cidr=${cidr}&key=${SCANNER_KEY}`);
         if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || `Sweep failed (${res.status})`); }
         const initData = await res.json();
 
