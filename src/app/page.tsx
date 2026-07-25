@@ -719,6 +719,7 @@ export default function Dashboard() {
 
       {/* ── MAP ── */}
       <ErrorBoundary name="Map">
+        <div className="bg-starfield absolute inset-0 z-[1]" />
         <OsirisMap 
           key={openspyTheme}
           data={data} 

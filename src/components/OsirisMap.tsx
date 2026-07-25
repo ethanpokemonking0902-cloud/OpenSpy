@@ -165,7 +165,7 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: darkStyle,
-      center: [25.48, 42.70], zoom: 6.5, minZoom: 1.5, maxZoom: 18,
+      center: [0, 20], zoom: 1.5, minZoom: 1.5, maxZoom: 18,
       attributionControl: false,
       maxPitch: 85,
     });
@@ -624,7 +624,18 @@ function OsirisMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCl
       }
     });
     map.on('contextmenu', e => { e.preventDefault(); onRightClick?.({ lat: e.lngLat.lat, lng: e.lngLat.lng }); });
-    map.on('moveend', () => { const c = map.getCenter(); onViewStateChange?.({ zoom: map.getZoom(), latitude: c.lat }); });
+    map.on('moveend', () => { 
+      const c = map.getCenter(); 
+      onViewStateChange?.({ zoom: map.getZoom(), latitude: c.lat }); 
+      
+      // Auto-center on [0, 20] when at minimum zoom
+      if (Math.abs(map.getZoom() - 1.5) < 0.01) {
+        const current = map.getCenter();
+        if (Math.abs(current.lng - 0) > 0.5 || Math.abs(current.lat - 20) > 0.5) {
+          map.flyTo({ center: [0, 20], duration: 1000 });
+        }
+      }
+    });
 
     // ── POPUP HELPER ──
     const popup = (coords: any, html: string) => {
