@@ -105,66 +105,30 @@ export default function Dashboard() {
   const [headerVisible, setHeaderVisible] = useState(true);
   const sidebarHideTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // Auto-hide sidebars and header when mouse is away
+  // Remove auto-hide - sidebars only close on click-outside or manual toggle
   useEffect(() => {
-    let leftTimer: NodeJS.Timeout | null = null;
-    let rightTimer: NodeJS.Timeout | null = null;
-    let headerTimer: NodeJS.Timeout | null = null;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const leftThreshold = 30; // pixels from left edge (on notch)
-      const rightThreshold = 30; // pixels from right edge (on notch)
-      const topThreshold = 80; // pixels from top edge (header area)
-
-      const showLeft = e.clientX < leftThreshold;
-      const showRight = e.clientX > window.innerWidth - rightThreshold;
-      const showHeader = e.clientY < topThreshold;
-
-      // LEFT SIDEBAR
-      setLeftSidebarVisible(prev => {
-        if (showLeft && !prev) {
-          if (leftTimer) clearTimeout(leftTimer);
-          return true;
-        } else if (!showLeft && prev) {
-          if (leftTimer) clearTimeout(leftTimer);
-          leftTimer = setTimeout(() => setLeftSidebarVisible(false), 500);
-        }
-        return prev;
-      });
-
-      // RIGHT SIDEBAR
-      setRightSidebarVisible(prev => {
-        if (showRight && !prev) {
-          if (rightTimer) clearTimeout(rightTimer);
-          return true;
-        } else if (!showRight && prev) {
-          if (rightTimer) clearTimeout(rightTimer);
-          rightTimer = setTimeout(() => setRightSidebarVisible(false), 500);
-        }
-        return prev;
-      });
-
-      // HEADER
-      setHeaderVisible(prev => {
-        if (showHeader && !prev) {
-          if (headerTimer) clearTimeout(headerTimer);
-          return true;
-        } else if (!showHeader && prev) {
-          if (headerTimer) clearTimeout(headerTimer);
-          headerTimer = setTimeout(() => setHeaderVisible(false), 500);
-        }
-        return prev;
-      });
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      
+      // Close left sidebar if clicking outside it
+      if (leftSidebarVisible && !target.closest('[data-sidebar="left"]') && !target.closest('button[data-toggle="left"]')) {
+        setLeftSidebarVisible(false);
+      }
+      
+      // Close right sidebar if clicking outside it
+      if (rightSidebarVisible && !target.closest('[data-sidebar="right"]') && !target.closest('button[data-toggle="right"]')) {
+        setRightSidebarVisible(false);
+      }
+      
+      // Close header if clicking outside it
+      if (headerVisible && !target.closest('[data-header]') && !target.closest('button[data-toggle="header"]')) {
+        setHeaderVisible(false);
+      }
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      if (leftTimer) clearTimeout(leftTimer);
-      if (rightTimer) clearTimeout(rightTimer);
-      if (headerTimer) clearTimeout(headerTimer);
-    };
-  }, []);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [leftSidebarVisible, rightSidebarVisible, headerVisible]);
   const [showLayers, setShowLayers] = useState(true);
   const [showMarkets, setShowMarkets] = useState(false);
   const [showAlerts, setShowAlerts] = useState(false);
