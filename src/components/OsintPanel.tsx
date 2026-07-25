@@ -183,28 +183,30 @@ function OsintPanelInner({ isMobile, onSweepVisualize, onScanGeolocate }: OsintP
     }
 
     try {
+      const SCANNER_URL = process.env.NEXT_PUBLIC_SCANNER_URL || '';
+      const SCANNER_KEY = process.env.NEXT_PUBLIC_SCANNER_KEY || '';
+      
       let url = '';
       switch (activeTab) {
-
-        case 'dns': url = `/api/osint/dns?domain=${encodeURIComponent(query)}`; break;
-        case 'certs': url = `/api/osint/certs?domain=${encodeURIComponent(query)}`; break;
-        case 'whois': url = `/api/osint/whois?domain=${encodeURIComponent(query)}`; break;
-        case 'threats': url = `/api/osint/threats?query=${encodeURIComponent(query)}`; break;
-        case 'bgp': url = `/api/osint/bgp?query=${encodeURIComponent(query)}`; break;
-        case 'mac': url = `/api/osint/mac?mac=${encodeURIComponent(query)}`; break;
-        case 'phone': url = `/api/osint/phone?number=${encodeURIComponent(query)}`; break;
-        case 'leaks': url = `https://api.xposedornot.com/v1/breach-analytics?email=${encodeURIComponent(query)}`; break;
-        case 'crypto': url = `/api/osint/crypto?address=${encodeURIComponent(query)}`; break;
-        case 'github': url = `/api/osint/github?user=${encodeURIComponent(query)}`; break;
-        case 'vuln': url = `/api/scanner?target=${encodeURIComponent(query)}&type=vuln`; break;
-        case 'scanner': url = `/api/scanner?target=${encodeURIComponent(query)}&type=${scanType}`; break;
-        case 'headers': url = `/api/scanner?target=${encodeURIComponent(query)}&type=headers`; break;
-        case 'ssl': url = `/api/scanner?target=${encodeURIComponent(query)}&type=ssl`; break;
-        case 'subdomains': url = `/api/scanner?target=${encodeURIComponent(query)}&type=subdomains`; break;
-        case 'tech': url = `/api/scanner?target=${encodeURIComponent(query)}&type=tech`; break;
-        case 'shodan': url = `https://internetdb.shodan.io/${encodeURIComponent(query)}`; break;
+        // OSINT endpoints (backend)
+        case 'dns': url = `${SCANNER_URL}/api/osint/dns?domain=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
+        case 'certs': url = `${SCANNER_URL}/api/osint/certs?domain=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
+        case 'whois': url = `${SCANNER_URL}/scan/whois?target=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
+        case 'threats': url = `${SCANNER_URL}/api/osint/threats?query=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
+        case 'bgp': url = `${SCANNER_URL}/api/osint/bgp?query=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
+        case 'mac': url = `${SCANNER_URL}/api/osint/mac?mac=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
+        case 'phone': url = `${SCANNER_URL}/scan/phone?target=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
+        case 'leaks': url = `${SCANNER_URL}/api/osint/leaks?email=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
+        case 'github': url = `${SCANNER_URL}/api/osint/github?user=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
+        case 'vuln': url = `${SCANNER_URL}/scan/vuln?target=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
+        case 'scanner': url = `${SCANNER_URL}/scan/quick?target=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
+        case 'headers': url = `${SCANNER_URL}/scan/headers?target=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
+        case 'ssl': url = `${SCANNER_URL}/scan/ssl?target=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
+        case 'subdomains': url = `${SCANNER_URL}/scan/subdomains?target=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
+        case 'tech': url = `${SCANNER_URL}/scan/tech?target=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
+        case 'shodan': url = `${SCANNER_URL}/api/osint/shodan?ip=${encodeURIComponent(query)}&key=${SCANNER_KEY}`; break;
       }
-      const res = await fetch(url, activeTab === 'shodan' ? { cache: 'no-store' } : undefined);
+      const res = await fetch(url, { cache: 'no-store' });
       if (activeTab === 'shodan' && res.status === 404) {
         setResults({ ip: query, status: 'No Shodan InternetDB records found', ports: [], cpes: [], hostnames: [], tags: [], vulns: [] });
         setLoading(false);
@@ -219,24 +221,24 @@ function OsintPanelInner({ isMobile, onSweepVisualize, onScanGeolocate }: OsintP
       const data = await res.json();
       if (res.ok) {
         let parsedData = data;
-        if (activeTab === 'leaks') {
-           let breachList: string[] = [];
+        
+        // Transform backend responses to frontend format
+        if (activeTab === 'leaks' && data) {
+           // Backend returns: {email, breached, breach_count, breaches, status}
+           // breaches is array of {name, title, date, data_classes}
+           const breachList = (data.breaches || []).map((b: any) => b.name || b.title || 'Unknown');
            const dataExposed = new Set<string>();
-           if (data.BreachesSummary && data.BreachesSummary.site) {
-              breachList = data.BreachesSummary.site.split(';').filter(Boolean);
-           }
-           if (data.ExposedData && Array.isArray(data.ExposedData)) {
-              data.ExposedData.forEach((item: any) => {
-                 if (item.data_classes && Array.isArray(item.data_classes)) {
-                    item.data_classes.forEach((dc: string) => dataExposed.add(dc));
-                 }
-              });
-           }
+           (data.breaches || []).forEach((b: any) => {
+              if (b.data_classes && Array.isArray(b.data_classes)) {
+                 b.data_classes.forEach((dc: string) => dataExposed.add(dc));
+              }
+           });
            parsedData = {
               email: query,
-              breached: breachList.length > 0,
+              breached: data.breached || false,
               breaches: breachList,
-              data_exposed: Array.from(dataExposed).sort()
+              data_exposed: Array.from(dataExposed).sort(),
+              breach_count: data.breach_count || 0
            };
         }
 
@@ -245,24 +247,21 @@ function OsintPanelInner({ isMobile, onSweepVisualize, onScanGeolocate }: OsintP
         
         // Geolocate the target in the background
         if (activeTab === 'phone') {
-          if (data.lat && data.lng && onScanGeolocate) {
-             onScanGeolocate(query, { lat: data.lat, lng: data.lng, type: 'phone', region: data.region });
+          // Phone scanner returns: {phone, valid, geolocation: {lat, lng, country, city}, carrier, etc}
+          if (data.geolocation && data.geolocation.latitude && data.geolocation.longitude && onScanGeolocate) {
+             onScanGeolocate(query, { 
+               lat: data.geolocation.latitude, 
+               lng: data.geolocation.longitude, 
+               type: 'phone', 
+               country: data.geolocation.country,
+               city: data.geolocation.city
+             });
           }
-        } else if (activeTab !== 'sweep' && activeTab !== 'vuln' && activeTab !== 'crypto' && activeTab !== 'mac' && activeTab !== 'bgp' && activeTab !== 'github' && activeTab !== 'leaks' && activeTab !== 'phone') {
-          fetch(`/api/osint/ip?ip=${encodeURIComponent(query)}`)
-            .then(r => r.json())
-            .then(locData => {
-              if (locData && locData.geo && locData.geo.lat && locData.geo.lon && onScanGeolocate) {
-                // ip-api returns lat/lon, we pass it up
-                onScanGeolocate(query, { lat: locData.geo.lat, lng: locData.geo.lon, ...locData, type: activeTab });
-              }
-            })
-            .catch(() => {});
         }
       } else {
         setError(data.error || 'Lookup failed');
       }
-    } catch { setError('Network error'); }
+    } catch (err: any) { setError(err.message || 'Network error'); }
     finally { setLoading(false); }
   }, [query, activeTab, scanType, loading, sweepCidr]);
 
