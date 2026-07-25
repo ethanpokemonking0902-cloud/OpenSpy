@@ -425,12 +425,14 @@ html, body {
 .mobile-drawer {
   position: fixed;
   bottom: 0; left: 0; right: 0;
-  max-height: 55vh;
-  border-radius: 16px 16px 0 0;
+  max-height: 60vh;
+  border-radius: 20px 20px 0 0;
   overflow-y: auto;
   z-index: 400;
   transform: translateY(100%);
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  background: var(--bg-panel);
+  border: 1px solid rgba(255,255,255,0.08);
 }
 
 .mobile-drawer.open {
@@ -438,10 +440,10 @@ html, body {
 }
 
 .mobile-drawer-handle {
-  width: 36px; height: 4px;
-  background: rgba(var(--gold-rgb), 0.3);
+  width: 40px; height: 5px;
+  background: rgba(var(--gold-rgb), 0.4);
   border-radius: 4px;
-  margin: 8px auto 8px;
+  margin: 10px auto 12px;
 }
 
 /* ── Mobile Bottom Nav ── */
@@ -451,37 +453,40 @@ html, body {
   z-index: 450;
   display: none;
   padding: 0 4px;
-  padding-bottom: env(safe-area-inset-bottom, 4px);
-  background: linear-gradient(180deg, transparent 0%, rgba(4,4,10,0.95) 30%);
+  padding-bottom: env(safe-area-inset-bottom, 8px);
+  background: linear-gradient(180deg, transparent 0%, rgba(4,4,10,0.98) 25%);
 }
 
 .mobile-nav-inner {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  padding: 6px 2px 4px;
-  gap: 0;
+  padding: 8px 4px 6px;
+  gap: 2px;
+  border-top: 1px solid rgba(255,255,255,0.05);
 }
 
 .mobile-nav-btn {
-  display: flex; flex-direction: column; align-items: center; gap: 1px;
-  padding: 5px 6px; border-radius: 8px;
-  font-family: var(--font-hud); font-size: 6px; letter-spacing: 0.08em;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 6px 8px; border-radius: 10px;
+  font-family: var(--font-hud); font-size: 11px; letter-spacing: 0.08em;
   color: var(--text-muted); background: transparent;
   border: none; cursor: pointer; transition: all 0.2s ease;
   text-transform: uppercase;
-  min-width: 0;
+  min-width: 44px;
+  min-height: 44px;
   flex: 1;
   -webkit-tap-highlight-color: transparent;
 }
 
 .mobile-nav-btn.active {
   color: var(--gold-primary);
-  background: rgba(var(--gold-rgb), 0.1);
+  background: rgba(var(--gold-rgb), 0.12);
+  border: 1px solid rgba(var(--gold-rgb), 0.2);
 }
 
 .mobile-nav-btn svg {
-  width: 16px; height: 16px;
+  width: 18px; height: 18px;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -499,7 +504,7 @@ html, body {
   :root { --edge-pad: 8px; --panel-gap: 6px; }
 
   .desktop-only { display: none !important; }
-  .mobile-nav { display: block; }
+  .mobile-nav { display: block !important; }
 
   /* Hide corner frames on mobile */
   .corner-frame { display: none !important; }
@@ -508,25 +513,42 @@ html, body {
   .desktop-panel { display: none !important; }
 
   /* Adjust map popups for touch */
-  .maplibregl-popup { max-width: 260px !important; font-size: 10px !important; }
-  .maplibregl-popup-content { max-width: 260px !important; padding: 8px !important; }
+  .maplibregl-popup { max-width: 90vw !important; font-size: 11px !important; }
+  .maplibregl-popup-content { max-width: 90vw !important; padding: 10px !important; }
   .maplibregl-popup-close-button { font-size: 18px !important; padding: 4px 8px !important; }
 
   /* Glass panel mobile tweaks */
-  .glass-panel { border-radius: 12px; }
+  .glass-panel { border-radius: 12px; font-size: 13px; }
 
   /* Status bar mobile */
   .status-bar-desktop { display: none !important; }
 
   /* Prevent body scroll when drawer is open */
   body.drawer-open { overflow: hidden; }
+
+  /* Mobile-friendly text */
+  body { font-size: 14px; }
+  
+  /* Touch-friendly buttons */
+  button { min-height: 44px; min-width: 44px; }
+
+  /* Drawer improvements */
+  .mobile-drawer { max-height: 60vh; }
+  
+  /* Nav bar spacing */
+  .mobile-nav-inner { padding: 8px 4px 4px; gap: 2px; }
+  .mobile-nav-btn { padding: 6px 8px; font-size: 11px; }
+  .mobile-nav-btn svg { width: 18px; height: 18px; }
 }
 
 /* Small phones */
 @media (max-width: 390px) {
   :root { --edge-pad: 4px; }
-  .mobile-nav-btn { padding: 4px 3px; font-size: 5px; }
-  .mobile-nav-btn svg { width: 14px; height: 14px; }
+  .mobile-nav-btn { padding: 5px 4px; font-size: 10px; }
+  .mobile-nav-btn svg { width: 16px; height: 16px; }
+  .mobile-nav-btn span { font-size: 9px; }
+  .glass-panel { padding: 8px; }
+  button { min-height: 40px; }
 }
 
 /* ── Landscape mobile ── */
@@ -534,12 +556,15 @@ html, body {
   .desktop-only { display: none !important; }
   .desktop-panel { display: none !important; }
   .status-bar-desktop { display: none !important; }
-  .mobile-nav { display: block; }
-  .mobile-nav-inner { padding: 4px 2px 2px; }
-  .mobile-nav-btn { padding: 3px 4px; font-size: 5px; }
-  .mobile-nav-btn svg { width: 14px; height: 14px; }
-  .mobile-nav-btn span { display: none; }
-  .mobile-drawer-handle { margin: 4px auto 4px; }
+  .mobile-nav { display: block !important; }
+  .mobile-nav-inner { padding: 6px 2px 2px; gap: 2px; }
+  .mobile-nav-btn { padding: 4px 5px; font-size: 9px; }
+  .mobile-nav-btn svg { width: 16px; height: 16px; }
+  .mobile-nav-btn span { display: inline; font-size: 8px; }
+  .mobile-drawer { max-height: 50vh; }
+  .mobile-drawer-handle { margin: 6px auto; }
+  .glass-panel { padding: 6px; font-size: 12px; }
+  button { min-height: 40px; }
 }
 
 /* Safe area for notched phones */
