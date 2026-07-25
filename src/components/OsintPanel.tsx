@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, memo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { PhoneNumberUtil, PhoneNumberFormat } from 'google-libphonenumber';
 import {
   LocateFixed,
   Search, Radar, Globe, Shield, FileText, Radio,
@@ -107,6 +108,116 @@ function OsintPanelInner({ isMobile, onSweepVisualize, onScanGeolocate }: OsintP
           setError("Network error: " + err.message);
         });
     };
+
+  const PHONE_UTIL = PhoneNumberUtil.getInstance();
+  const PHONE_TYPE_MAP: Record<number, string> = {
+    0: 'FIXED_LINE',
+    1: 'MOBILE',
+    2: 'FIXED_LINE_OR_MOBILE',
+    3: 'TOLL_FREE',
+    4: 'PREMIUM_RATE',
+    5: 'SHARED_COST',
+    6: 'VOIP',
+    7: 'PERSONAL_NUMBER',
+    8: 'PAGER',
+    9: 'UAN',
+    10: 'VOICEMAIL',
+    11: 'UNKNOWN',
+  };
+
+  const normalizePhoneQuery = (value: string) => {
+    let phone = value.trim();
+    const digits = phone.replace(/\D/g, '');
+    if (!phone.startsWith('+') && digits.length === 10) {
+      phone = '+1' + digits;
+    } else if (!phone.startsWith('+') && !phone.startsWith('00')) {
+      phone = '+' + digits;
+    }
+    return phone;
+  };
+
+  const getPhoneFallback = (value: string, fallbackError?: string) => {
+    const queryValue = value.trim();
+    const formattedQuery = normalizePhoneQuery(queryValue);
+    try {
+      const parsed = PHONE_UTIL.parse(formattedQuery, undefined);
+      const valid = PHONE_UTIL.isValidNumber(parsed);
+      const regionCode = PHONE_UTIL.getRegionCodeForNumber(parsed) || 'Unknown';
+      const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
+      const regionName = regionCode !== 'Unknown' ? regionNames.of(regionCode) || regionCode : 'Unknown';
+      const formatE164 = PHONE_UTIL.format(parsed, PhoneNumberFormat.E164);
+      const formatIntl = PHONE_UTIL.format(parsed, PhoneNumberFormat.INTERNATIONAL);
+      const formatNat = PHONE_UTIL.format(parsed, PhoneNumberFormat.NATIONAL);
+      const numberType = PHONE_UTIL.getNumberType(parsed);
+
+      return {
+        query: queryValue,
+        valid,
+        number: formatE164,
+        international: formatIntl,
+        national: formatNat,
+        country_code: `+${parsed.getCountryCode ? parsed.getCountryCode() : parsed.countryCode || ''}`,
+        region: regionName,
+        region_code: regionCode,
+        line_type: PHONE_TYPE_MAP[numberType] || 'UNKNOWN',
+        status: fallbackError ? 'fallback' : 'partial',
+        error: fallbackError,
+      };
+    } catch (err: any) {
+      return {
+        query: queryValue,
+        valid: false,
+        number: formattedQuery,
+        international: formattedQuery,
+        national: formattedQuery,
+        country_code: 'Unknown',
+        region: 'Unknown',
+        region_code: 'Unknown',
+        line_type: 'UNKNOWN',
+        status: 'fallback',
+        error: fallbackError || 'Invalid phone format',
+      };
+    }
+  };
+
+  const getFallbackResult = (tab: string, queryValue: string, fallbackError: string) => {
+    const base = { query: queryValue, status: 'fallback', error: fallbackError };
+
+    switch (tab) {
+      case 'dns':
+        return { ...base, A: [], AAAA: [], MX: [], NS: [], TXT: [], CNAME: [], SOA: [] };
+      case 'whois':
+        return { ...base, domain_name: queryValue, registrar: 'Unknown', creation_date: '—', expiration_date: '—', updated_date: '—', status: 'fallback' };
+      case 'certs':
+        return { ...base, certificates: [], certs: [], status: 'fallback' };
+      case 'threats':
+        return { ...base, risk_score: 0, malicious: false, category: 'Unknown', total_reports: 0, reports: 0, tags: [] };
+      case 'shodan':
+        return { ...base, ip: queryValue, ports: [], cpes: [], hostnames: [], tags: [], vulns: [] };
+      case 'bgp':
+        return { ...base, type: 'ip', ip: queryValue, asn: null, prefixes: null, peers: null };
+      case 'mac':
+        return { ...base, mac: queryValue, vendor: 'Unknown' };
+      case 'phone':
+        return getPhoneFallback(queryValue, fallbackError);
+      case 'github':
+        return { ...base, username: queryValue, public_repos: 0, followers: 0, name: null, location: null, email: null, bio: null, recent_repos: [] };
+      case 'leaks':
+        return { ...base, email: queryValue, breached: false, breaches: [], data_exposed: [], breach_count: 0 };
+      case 'ssl':
+        return { ...base, target: queryValue, protocol: null, cipher: null, valid: false, issuer: 'Unknown', subject: 'Unknown', expires: 'Unknown', sans: [] };
+      case 'headers':
+        return { ...base, url: queryValue, server: 'Unknown', via: 'Unknown', headers: {} };
+      case 'tech':
+        return { ...base, target: queryValue, technologies: [], detected: [] };
+      case 'scanner':
+      case 'vuln':
+      case 'subdomains':
+        return { ...base, target: queryValue, status: 'fallback', details: 'Backend unavailable' };
+      default:
+        return base;
+    }
+  };
 
   const runLookup = useCallback(async () => {
     if (!query.trim() || loading) return;
@@ -221,7 +332,19 @@ function OsintPanelInner({ isMobile, onSweepVisualize, onScanGeolocate }: OsintP
         return;
       }
       const data = await res.json();
-      if (res.ok) {
+      if (!res.ok || data?.error || data?.status === 'error') {
+        if (activeTab === 'shodan' && res.status === 404) {
+          setResults({ ip: query, status: 'fallback', error: 'No Shodan InternetDB records found', ports: [], cpes: [], hostnames: [], tags: [], vulns: [] });
+        } else if (activeTab === 'leaks' && res.status === 404) {
+          setResults({ email: query, status: 'fallback', error: 'No leaks found', breached: false, breaches: [], data_exposed: [], breach_count: 0 });
+        } else {
+          setResults(getFallbackResult(activeTab, query, data?.error || `Backend returned ${res.status}`));
+        }
+        setHistory(prev => [{ tab: activeTab, query, time: new Date().toLocaleTimeString() }, ...prev.slice(0, 9)]);
+        setLoading(false);
+        return;
+      }
+      let parsedData = data;
         let parsedData = data;
         
         // Transform backend responses to frontend format
@@ -263,8 +386,14 @@ function OsintPanelInner({ isMobile, onSweepVisualize, onScanGeolocate }: OsintP
       } else {
         setError(data.error || 'Lookup failed');
       }
-    } catch (err: any) { setError(err.message || 'Network error'); }
-    finally { setLoading(false); }
+    } catch (err: any) {
+      if (activeTab !== 'sweep') {
+        setResults(getFallbackResult(activeTab, query, err?.message || 'Network error'));
+        setHistory(prev => [{ tab: activeTab, query, time: new Date().toLocaleTimeString() }, ...prev.slice(0, 9)]);
+      } else {
+        setError(err.message || 'Network error');
+      }
+    } finally { setLoading(false); }
   }, [query, activeTab, scanType, loading, sweepCidr]);
 
   const currentTab = TABS.find(t => t.id === activeTab);
@@ -524,14 +653,20 @@ function OsintPanelInner({ isMobile, onSweepVisualize, onScanGeolocate }: OsintP
           <SectionHeader title="PHONE INTELLIGENCE" icon={Phone} color="#D0D0D0" />
           <ResultRow label="Query" value={r.query} color="#D0D0D0" />
           <ResultRow label="Valid" value={r.valid ? 'YES' : 'NO'} color={r.valid ? '#E0E0E0' : '#FF3D3D'} />
-          {r.valid && (
-            <>
-              <ResultRow label="E.164 Format" value={r.number} />
-              <ResultRow label="Intl Format" value={r.international} />
-              <ResultRow label="Nat Format" value={r.national} />
-              <ResultRow label="Country" value={`${r.region} (${r.country_code})`} />
-              <ResultRow label="Line Type" value={r.line_type} color={r.line_type === 'MOBILE' ? '#E0E0E0' : r.line_type === 'VOIP' ? '#D0D0D0' : undefined} />
-            </>
+          <ResultRow label="E.164 Format" value={r.number || r.international || r.query} />
+          <ResultRow label="Intl Format" value={r.international || r.number || r.query} />
+          <ResultRow label="Nat Format" value={r.national || r.query} />
+          <ResultRow label="Country" value={`${r.region || 'Unknown'} (${r.country_code || 'Unknown'})`} />
+          <ResultRow label="Line Type" value={r.line_type || 'UNKNOWN'} color={r.line_type === 'MOBILE' ? '#E0E0E0' : r.line_type === 'VOIP' ? '#D0D0D0' : undefined} />
+          {r.status === 'fallback' && r.error && (
+            <div className="mt-2 p-2 rounded border border-yellow-500/30 bg-yellow-500/10">
+              <span className="text-[10px] font-mono text-yellow-200">FALLBACK INFO — {r.error}</span>
+            </div>
+          )}
+          {!r.valid && r.status !== 'fallback' && r.error && (
+            <div className="mt-2 p-2 rounded border border-red-500/30 bg-red-500/10">
+              <span className="text-[10px] font-mono text-red-200">{r.error}</span>
+            </div>
           )}
         </div>
       );
