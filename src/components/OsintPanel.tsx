@@ -183,8 +183,8 @@ function OsintPanelInner({ isMobile, onSweepVisualize, onScanGeolocate }: OsintP
     }
 
     try {
-      const SCANNER_URL = process.env.NEXT_PUBLIC_SCANNER_URL || '';
-      const SCANNER_KEY = process.env.NEXT_PUBLIC_SCANNER_KEY || '';
+      const SCANNER_URL = process.env.NEXT_PUBLIC_SCANNER_URL || 'https://openspy.up.railway.app';
+      const SCANNER_KEY = process.env.NEXT_PUBLIC_SCANNER_KEY || '9768678debc56cb587003b8bf83722cf4092b59e366ea36799ad97757f0f7a4f';
       
       let url = '';
       switch (activeTab) {
