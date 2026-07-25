@@ -63,6 +63,14 @@
   --font-hud: 'JetBrains Mono', 'Courier New', monospace;
   --font-body: 'Inter', -apple-system, sans-serif;
 
+  /* ── Z-Index Stack ── */
+  --z-notch: 251;
+  --z-sidebar: 250;
+  --z-header: 200;
+  --z-popup: 300;
+  --z-modal: 500;
+  --z-splash: 999;
+
   /* ── Spacing ── */
   --panel-gap: 12px;
   --edge-pad: 20px;

@@ -558,7 +558,7 @@ export default function WorldRemote({onClose,onPlaceOnMap}:{onClose?:()=>void,on
 
       {/* QR CODE MODAL */}
       <AnimatePresence>{showQR&&(
-        <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm rounded-xl z-50">
+        <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm rounded-xl z-[9998]">
           <motion.div initial={{scale:0.9,opacity:0}} animate={{scale:1,opacity:1}} exit={{scale:0.9,opacity:0}} className="flex flex-col items-center gap-3 bg-black/70 p-6 rounded-lg border border-white/10">
             <div className="flex items-center justify-between w-full">
               <span className="text-[10px] font-mono font-bold text-[#FFB800] tracking-widest">MOBILE SCAN</span>

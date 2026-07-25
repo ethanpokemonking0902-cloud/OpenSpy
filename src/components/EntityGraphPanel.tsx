@@ -195,7 +195,7 @@ function EntityGraphPanel({ entity, onClose }: Props) {
       <motion.div
         initial={{ x: 500, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 500, opacity: 0 }}
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className="fixed top-0 right-0 h-full z-[500] flex flex-col glass-panel"
+        className="fixed top-0 right-0 h-full z-[9998] flex flex-col glass-panel"
         style={{
           width: expanded ? '60vw' : '480px', maxWidth: '90vw',
           borderLeft: '1px solid var(--border-primary)',

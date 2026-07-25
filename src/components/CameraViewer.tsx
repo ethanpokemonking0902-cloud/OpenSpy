@@ -120,7 +120,7 @@ export default function CameraViewer({ camera, onClose, onLocate }: CameraViewer
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ duration: 0.3, type: "spring", bounce: 0 }}
-          className={`fixed z-[500] ${
+          className={`fixed z-[9998] ${
             fullscreen 
               ? 'inset-2 md:inset-4' 
               : 'bottom-[70px] left-2 right-2 md:bottom-6 md:right-6 md:left-auto md:w-[480px]'

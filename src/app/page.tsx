@@ -613,12 +613,14 @@ export default function Dashboard() {
 
       {/* Left sidebar notches */}
       {!leftSidebarVisible && (
-        <motion.div
+        <motion.button
+          onClick={() => setLeftSidebarVisible(true)}
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.6 }}
           transition={{ delay: 0.3, duration: 0.5 }}
-          className="fixed top-1/2 -translate-y-1/2 pointer-events-none z-[251]"
+          className="fixed top-1/2 -translate-y-1/2 pointer-events-auto z-[251] hover:opacity-100 transition-opacity cursor-pointer"
           style={{ left: '0px' }}
+          title="Click to open left sidebar"
         >
           <div
             className="w-2.5 h-16 rounded-r-lg"
@@ -627,17 +629,19 @@ export default function Dashboard() {
               boxShadow: '0 0 12px rgba(0,0,0,0.5)',
             }}
           />
-        </motion.div>
+        </motion.button>
       )}
 
       {/* Right sidebar notches */}
       {!rightSidebarVisible && (
-        <motion.div
+        <motion.button
+          onClick={() => setRightSidebarVisible(true)}
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.6 }}
           transition={{ delay: 0.3, duration: 0.5 }}
-          className="fixed top-1/2 -translate-y-1/2 pointer-events-none z-[251]"
+          className="fixed top-1/2 -translate-y-1/2 pointer-events-auto z-[251] hover:opacity-100 transition-opacity cursor-pointer"
           style={{ right: '0px' }}
+          title="Click to open right sidebar"
         >
           <div
             className="w-2.5 h-16 rounded-l-lg"
@@ -646,7 +650,7 @@ export default function Dashboard() {
               boxShadow: '0 0 12px rgba(0,0,0,0.5)',
             }}
           />
-        </motion.div>
+        </motion.button>
       )}
 
       {/* ── SPLASH ── */}
@@ -1022,7 +1026,7 @@ export default function Dashboard() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed inset-0 z-[500] flex items-center justify-center bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/70 backdrop-blur-sm"
             onClick={() => setLiveFeedUrl(null)}
           >
             <motion.div
@@ -1112,7 +1116,7 @@ export default function Dashboard() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[1000] flex items-center justify-center pointer-events-auto"
+            className="fixed inset-0 z-[9999] flex items-center justify-center pointer-events-auto"
             onClick={() => setShowChart(false)}
           >
             {/* Backdrop */}
@@ -1180,7 +1184,7 @@ export default function Dashboard() {
               <motion.div
                 initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
                 transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                className="fixed bottom-[52px] left-0 right-0 z-[400] glass-panel rounded-b-none overflow-y-auto styled-scrollbar"
+                className="fixed bottom-[52px] left-0 right-0 z-[9997] glass-panel rounded-b-none overflow-y-auto styled-scrollbar"
                 style={{ maxHeight: 'min(55vh, calc(100dvh - 100px))', paddingBottom: 'env(safe-area-inset-bottom, 4px)' }}
               >
                 <div className="mobile-drawer-handle" />
